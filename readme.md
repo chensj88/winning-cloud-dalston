@@ -693,7 +693,6 @@ eureka:
 ##### *application-peerX.yml*
 
 ```yaml
-​```yaml
 server:
   # 端口
   port: 8000
@@ -708,7 +707,6 @@ eureka:
 spring:
   application:
     name: eureka-server-peerX
-​```
 ```
 
 修改上面的`peerX`到指定参数即可
