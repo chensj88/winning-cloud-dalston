@@ -1,4 +1,4 @@
-package com.winning.devops.boot.web;
+package com.winning.devops.boot.web.controller;
 
 import com.winning.devops.boot.base.Constants;
 import com.winning.devops.boot.web.model.User;

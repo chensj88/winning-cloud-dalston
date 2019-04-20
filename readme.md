@@ -726,7 +726,7 @@ spring:
 
 修改上面的`peerX`到指定参数即可
 
-### 四、Ribbon
+## 四、Ribbon
 
 ​	 Spring Cloud Ribbon是一个基于HTTP和TCP的客户端负载均衡工具，它基于Netflix Ribbon实现。通过Spring Cloud的封装，可以让我们轻松地将面向服务的REST模版请求自动转换成客户端负载均衡的服务调用。Spring Cloud Ribbon虽然只是一个工具类框架，它不像服务注册中心、配置中心、API网关那样需要独立部署，但是它几乎存在于每一个Spring Cloud构建的微服务和基础设施中。因为微服务间的调用，API网关的请求转发等内容，实际上都是通过Ribbon来实现的，包括后续的Feign，它也是基于Ribbon实现的工具。所以，对Spring Cloud Ribbon的理解和使用，对于我们使用Spring Cloud来构建微服务非常重要。
 
@@ -735,5 +735,55 @@ spring:
 ​	`RestTemplate`是`Spring Resources`中一个访问 第三方RESTful API接口的网络请求框架。RestTemplate 的设计原则和其他Spring Template（例如 JdbcTemplate、JmsTemplate ）类似，都是为执行复杂任务提供了具有默认行为的简单方法。
 ​	`RestTemplate`是用来消费`REST`服务的，所以`RestTemplate`主要方法都与REST的HTTP协议的一些方法紧密相连，例如HEAD、GET、POST、PUT、DELETE、OPTIONS 等方法，这些方法在`RestTemplate`类对应的方法为 `headForHeaders()`、 `getForObject()`、`postForObject()`、`put()`和`delete()`等。
 
+测试使用代码：
 
+```java
+// 配置类
+@Configuration
+public class RestTemplateConfig {
+
+    @Bean
+    public RestTemplate restTemplate(ClientHttpRequestFactory factory){
+        return new RestTemplate(factory);
+    }
+
+    @Bean
+    public ClientHttpRequestFactory simpleClientHttpRequestFactory(){
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(15000);
+        factory.setReadTimeout(5000);
+        return factory;
+    }
+}
+//Controller
+ @Autowired
+    private RestTemplate restTemplate;
+    /**
+     * RestTemplate 请求
+     */
+    @PostMapping(value = "/hello")
+    public Map<String,Object> hello(){
+        Map<String,Object> resultMap = new HashMap<>();
+        resultMap.put("data",restTemplate.getForObject("https://www.baidu.com",String.class));
+        resultMap.put("status", Constants.SUCCESS_STATUS);
+        return resultMap;
+    }
+```
+
+### 4.2 Ribbon
+
+​		负载均衡是指将负载分摊到多个执行单元上，常见的负载均衡有两种方式。一种是**独立进程单元**，通过**负载均衡策略**，将**请求转发**到不同的执行单元上，例如**Ngnix** 。另一种是将**负载均衡逻辑以代码的形式**封装到服务消费者的**客户端**上，服务消费者客户端维护了一份服务提供的信息列表，有了信息列表，通过**负载均衡策略**将**请求分摊**给多个服务提供者，从而达到负载均衡的目的。
+
+​		`Ribbon Netflix`公司开源的一个负载均衡的组件，它属上述的第二种方式，是将负载均衡逻辑封装在客户端中，并且运行在客户端的进程里。 `Ribbon`是一个经过了云端测试的IPC库，可以很好地控制 HTTP和TCP客户端的负载均衡行为。
+
+​		在`Spring Cloud `构建的微服务系统中， `Ribbon `作为服务消费者的负载均衡器，有两种使用方式，一 种是和` RestTemplate`相结合，另一种是和`Feign`相结合。`Feign`已经默认集成了`Ribbon`。
+
+​		Ribbon有很多子模块，但很多模块没有用于生产环境，目前 Netflix 公司用于生产环境的 Ribbon
+子模块如下。
+
+* `ribbon-loadbalance` ：可以独立使用或与其他模块 起使用的负载均衡器 API
+* `ribbon-eureka` ：Ribbon结合Eureka客户端的API，为负载均衡器提供动态服务注册列表信息。
+* `ribbon-core`: Ribbon的核心API
+
+### 4.3 RestTemplate+Ribbon
 
