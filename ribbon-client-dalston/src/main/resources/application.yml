@@ -1,0 +1,34 @@
+server:
+  port: 8769
+spring:
+  application:
+    name: ribbon-client
+  devtools:
+    restart:
+      enabled: true
+# 监控配置
+management:
+  security:
+    enabled: false
+  port: ${server.port}
+  context-path: /moniter
+endpoints:
+  enabled: true
+  shutdown:
+    enabled: false
+info:
+  app:
+    encoding: UTF-8
+    java:
+      source: 1.8
+      target: 1.8
+    head: ${spring.application.name}
+    body: Welcome, this is ${spring.application.name} @ ${server.port}
+# 定义Ribbon客户端将访问的服务，服务的InstanceId是stores
+stores:
+  ribbon:
+    listOfServers: example.com,google.com
+# 不注册
+ribbon:
+  eureka:
+    enabled: false

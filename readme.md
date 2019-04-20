@@ -787,3 +787,132 @@ public class RestTemplateConfig {
 
 ### 4.3 RestTemplate+Ribbon
 
+#### 4.3.1 配置类
+
+```java
+@Configuration
+public class RestTemplateConfig {
+
+    /**
+     * 实例化RestTemplate，注册bean
+     * 使用@LoadBalanced就会结合Ribbon进行负载均衡
+     * @return
+     */
+    @Bean
+    @LoadBalanced
+    public RestTemplate initRestTemplate(){
+        return  new RestTemplate();
+    }
+}
+
+```
+
+#### 4.3.2 测试服务
+
+```java
+@Service
+public class RibbonService {
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    /**
+     * 请求http://eureka-client/hi/{username}
+     * @param username
+     * @return
+     */
+    public String hi(String username){
+        return restTemplate.getForObject("http://eureka-client/hi/"+username,String.class);
+    }
+}
+
+```
+
+#### 4.3.3 控制层
+
+```java
+@RestController
+public class RestClientController {
+
+    @Autowired
+    private RibbonService ribbonService;
+
+    @PostMapping(value = "/hi/{username}")
+    public Map hi(@PathVariable String username){
+        Map<String,Object> resultMap = new HashMap<>();
+        resultMap.put("data",ribbonService.hi(username));
+        resultMap.put("status", Constants.SUCCESS);
+        return resultMap;
+    }
+
+    @Autowired
+    private LoadBalancerClient loadBalancer;
+
+    /**
+     * 获取实例信息，从结果来看，将会是从每个客户端走一次
+     * @return
+     */
+    @PostMapping(value = "testRibbon")
+    public String testRibbon(){
+        ServiceInstance instance = loadBalancer.choose("eureka-client");
+        return instance.getHost()+":"+instance.getPort();
+    }
+}
+```
+
+> 上面的例子就是实现了负载均衡
+
+### 4.4 LoadBalancerClient
+
+​		在上面的工程的基础上，复制一份，修改application.yml文件为如下内容：
+
+```yaml
+server:
+  port: 8769
+# 定义Ribbon客户端将访问的服务，服务的InstanceId是`stores`
+stores:
+  ribbon:
+    listOfServers: example.com,google.com
+# 不注册
+ribbon:
+  eureka:
+    enabled: false
+```
+
+控制层代码：
+
+```java
+@RestController
+public class RibbonController {
+
+    @Autowired
+    private LoadBalancerClient loadBalancer;
+
+    /**
+     * 这个方法可以知道：
+     *  在Ribbon 中的负载均衡客户端为LoadBalancerClient 。在Spring Cloud项目中，
+     *  负载均衡器 Ribbon 会默认从Eureka Client 的服务注册列表中获取服务的信息，并缓存。
+     *  根据缓存的服务注册列表信息，可以通过LoadBalancerClient来选择不同的服务实例，
+     *  从而实现负载均衡。如果禁止Ribbon Eureka获取注册列表信息，则需要自己去维护一份服
+     *  务注册列表信息。 根据自己维护服务注册列表的信息，Ribbon可以实现负载均衡。
+     * @return
+     */
+    @PostMapping(value = "/testRibbon")
+    public String testRibbon(){
+        // 从配置文件中获取stores的服务端信息
+        ServiceInstance instance = loadBalancer.choose("stores");
+        return instance.getHost()+":"+instance.getPort();
+    }
+}
+```
+
+结果：
+
+```bash
+example.com:80
+google.com:80
+```
+
+结论：
+
+     	在Ribbon 中的负载均衡客户端为LoadBalancerClient 。在Spring Cloud项目中，负载均衡器 Ribbon 会默认从Eureka Client 的服务注册列表中获取服务的信息，并缓存。根据缓存的服务注册列表信息，可以通过LoadBalancerClient来选择不同的服务实例，从而实现负载均衡。如果禁止Ribbon Eureka获取注册列表信息，则需要自己去维护一份服务注册列表信息。 根据自己维护服务注册列表的信息，Ribbon可以实现负载均衡。

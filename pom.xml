@@ -7,6 +7,8 @@
         <module>eureka-server-dalston</module>
         <module>eureka-client-dalston</module>
         <module>spring-boot-dalston</module>
+        <module>eureka-ribbon-client-dalston</module>
+        <module>ribbon-client-dalston</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
