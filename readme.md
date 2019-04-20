@@ -130,6 +130,19 @@ set global time_zone='+8:00';
 default-time-zone='+08:00'
 ```
 
+### Feign @PathVariable
+  使用Feign的时候,如果参数中带有@PathVariable形式的参数,则要用value=""标明对应的参数,否则会抛出IllegalStateException异常
+  ```java
+        @PutMapping("/disuseable/{sn}")
+        ApiResponse disUseAble(@PathVariable String sn);   // wrong
+   ```
+   修改为
+   
+   ```java
+      @PutMapping("/disuseable/{sn}")
+      ApiResponse disUseAble(@PathVariable(value="sn") String sn);  // right
+   ```
+
 
 
 ## 三、Eureka 治理中心
