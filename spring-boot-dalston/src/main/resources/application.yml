@@ -1,0 +1,62 @@
+#tomcat端口
+server:
+  port: 8080
+  #tomcat 编码
+  tomcat:
+    uri-encoding: utf-8
+spring:
+  mvc:
+    static-path-pattern: /**
+  # 热部署
+  devtools:
+    livereload:
+      enabled: true
+      port: 35729
+    restart:
+      enabled: true
+  http:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+  output:
+    ansi:
+      enabled: detect
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    url: jdbc:p6spy:mysql://localhost:3306/test
+    username: root
+    password: 123456
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      pool-name: hikari-pool
+      auto-commit: true
+      connection-timeout: 30000
+      idle-timeout: 60000
+      max-lifetime: 1800000
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database: mysql
+# 监控配置
+management:
+  security:
+    enabled: false
+  context-path: /monitor
+  port: 8090
+endpoints:
+  enabled: true
+  shutdown:
+    enabled: false
+info:
+  app:
+    encoding: UTF-8
+    java:
+      source: 1.8
+      target: 1.8
+    head: ${spring.application.name}
+    body: Welcome, this is ${spring.application.name} @ ${server.port}
+

@@ -6,6 +6,7 @@
     <modules>
         <module>eureka-server-dalston</module>
         <module>eureka-client-dalston</module>
+        <module>spring-boot-dalston</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>

@@ -63,27 +63,27 @@
 
     * **基于ImportBeanDefinitionRegistrar的使用**
 
-    ```java
-    /**
-     * 定义一个自定的ImportBeanDefinitionRegistrar
-     *
-     * @author zhangqh
-     * @date 2018年5月1日
-     */
-    public class MyImportBeanDefinitionRegistrar  implements ImportBeanDefinitionRegistrar{
-        public void registerBeanDefinitions(
-                AnnotationMetadata importingClassMetadata,
-                BeanDefinitionRegistry registry) {
-            // new一个RootBeanDefinition
-            RootBeanDefinition rootBeanDefinition = new RootBeanDefinition(Rectangle.class);
-            // 注册一个名字叫rectangle的bean
-            registry.registerBeanDefinition("rectangle", rootBeanDefinition);
+        ```java
+        /**
+         * 定义一个自定的ImportBeanDefinitionRegistrar
+         *
+         * @author zhangqh
+         * @date 2018年5月1日
+         */
+        public class MyImportBeanDefinitionRegistrar  implements ImportBeanDefinitionRegistrar{
+            public void registerBeanDefinitions(
+                    AnnotationMetadata importingClassMetadata,
+                    BeanDefinitionRegistry registry) {
+                // new一个RootBeanDefinition
+                RootBeanDefinition rootBeanDefinition = new RootBeanDefinition(Rectangle.class);
+                // 注册一个名字叫rectangle的bean
+                registry.registerBeanDefinition("rectangle", rootBeanDefinition);
+            }
         }
-    }
-    
-    // 使用@Import
-    @Import({Square.class,Circular.class,MyImportSelector.class,MyImportBeanDefinitionRegistrar.class})
-    ```
+
+        // 使用@Import
+        @Import({Square.class,Circular.class,MyImportSelector.class,MyImportBeanDefinitionRegistrar.class})
+        ```
 
     
 ## 二、坑点
@@ -113,7 +113,22 @@
 </dependency>
 ```
 
+### mysql
 
+问题：The server time zone value 'ÖÐ¹ú±ê×¼Ê±¼ä' is unrecognized or represents more than one time zone....
+
+解决方案:
+
+```bash
+show variables like '%time_zone%';
+set global time_zone='+8:00';
+```
+
+或者在my.ini中增加[mysqld]下面的配置
+
+```bash
+default-time-zone='+08:00'
+```
 
 
 
