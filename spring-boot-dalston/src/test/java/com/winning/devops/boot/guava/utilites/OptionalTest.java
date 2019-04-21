@@ -1,4 +1,4 @@
-package com.winning.devops.boot.guava;
+package com.winning.devops.boot.guava.utilites;
 
 import com.google.common.base.Optional;
 
