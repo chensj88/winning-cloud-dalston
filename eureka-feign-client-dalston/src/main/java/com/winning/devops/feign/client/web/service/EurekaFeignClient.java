@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface EurekaFeignClient {
     /**
      * feign请求
-     * @param username
+     * @param username 用户名称
      * @return
      */
     @GetMapping(value = "/hi/{username}")
