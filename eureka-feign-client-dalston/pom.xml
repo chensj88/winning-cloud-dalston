@@ -46,6 +46,21 @@
             <artifactId>lombok</artifactId>
             <version>1.18.6</version>
         </dependency>
+       <!-- http-client
+         <dependency>
+             <groupId>com.netflix.feign</groupId>
+             <artifactId>feign-core</artifactId>
+             <version>8.18.0</version>
+             <scope>runtime</scope>
+         </dependency>
+         >-->
+        <!-- feign-okhttp
+        <dependency>
+            <groupId>com.netflix.feign</groupId>
+            <artifactId>feign-okhttp</artifactId>
+            <version>8.18.0</version>
+        </dependency> -->
+
     </dependencies>
 
     <build>

@@ -1,5 +1,7 @@
 # Spring Cloud
 
+[TOC]
+
 ## 一、常用注解
 
 ### 1.1 Spring 注解
@@ -13,6 +15,21 @@
 #### `@ConfigurationProperties`
 
 ​	设置属性的信息 如`prefix`就是前缀
+
+#### `@Configuration`
+
+用于定义配置类，可替换xml配置文件，被注解的类内部包含有一个或多个被@Bean注解的方法
+
+@Configuration注解的配置类有如下要求：
+
+1. @Configuration不可以是final类型；
+2. @Configuration不可以是匿名类；
+3. 嵌套的configuration必须是静态类。
+
+#### `@AutoConfigureAfter`和`@AutoConfigureBefore`
+
+	* @AutoConfigureBefore : 自动注入在什么类加载前
+	* @AutoConfigureAfter: 自动注入在什么类加载后
 
 #### `@PathVariable`
 
@@ -198,7 +215,9 @@ java中元注解有四个： @Retention @Target @Document @Inherited；
 
 ## 二、坑点
 
-### 1、`eureka client` 使用如下配置时，启动后会自动关闭
+### 2.1`eureka client`配置问题
+
+使用如下配置时，启动后会自动关闭
 
 在spring cloud `Finchley.RELEASE`、`Greenwich.RELEASE`都有问题
 
@@ -223,7 +242,7 @@ java中元注解有四个： @Retention @Target @Document @Inherited；
 </dependency>
 ```
 
-### mysql
+### 2.2 mysql time zone 
 
 问题：The server time zone value 'ÖÐ¹ú±ê×¼Ê±¼ä' is unrecognized or represents more than one time zone....
 
@@ -240,22 +259,23 @@ set global time_zone='+8:00';
 default-time-zone='+08:00'
 ```
 
-### Feign @PathVariable
+### 2.3 Feign @PathVariable设置
+
   使用Feign的时候,如果参数中带有@PathVariable形式的参数,则要用value=""标明对应的参数,否则会抛出IllegalStateException异常
   ```java
-        @PutMapping("/disuseable/{sn}")
-        ApiResponse disUseAble(@PathVariable String sn);   // wrong
+@PutMapping("/disuseable/{sn}")
+ApiResponse disUseAble(@PathVariable String sn);   // wrong
   ```
    修改为
 
    ```java
-      @PutMapping("/disuseable/{sn}")
-      ApiResponse disUseAble(@PathVariable(value="sn") String sn);  // right
+@PutMapping("/disuseable/{sn}")
+ApiResponse disUseAble(@PathVariable(value="sn") String sn);  // right
    ```
 
 
 
-## 三、Eureka 治理中心
+## 三、[Eureka](https://github.com/Netflix/eureka/wiki) 治理中心
 
 ### 3.1 Eureka概念
 
@@ -849,7 +869,7 @@ spring:
 
 修改上面的`peerX`到指定参数即可
 
-## 四、Ribbon 负载均衡
+## 四、[Ribbon](https://github.com/Netflix/ribbon) 负载均衡
 
 ​	 Spring Cloud Ribbon是一个基于HTTP和TCP的客户端负载均衡工具，它基于Netflix Ribbon实现。通过Spring Cloud的封装，可以让我们轻松地将面向服务的REST模版请求自动转换成客户端负载均衡的服务调用。Spring Cloud Ribbon虽然只是一个工具类框架，它不像服务注册中心、配置中心、API网关那样需要独立部署，但是它几乎存在于每一个Spring Cloud构建的微服务和基础设施中。因为微服务间的调用，API网关的请求转发等内容，实际上都是通过Ribbon来实现的，包括后续的Feign，它也是基于Ribbon实现的工具。所以，对Spring Cloud Ribbon的理解和使用，对于我们使用Spring Cloud来构建微服务非常重要。
 
@@ -1688,7 +1708,7 @@ public class LoadBalancerInterceptor implements ClientHttpRequestInterceptor {
 
 
 
-## 五、Feign客户端
+## 五、[Feign](https://github.com/OpenFeign/feign)客户端
 
 ### 5.1 Feign使用
 
@@ -2194,37 +2214,275 @@ public <T> T newInstance(Target<T> target) {
 
 ​		从上面的代码中可以看出，`Client`是最终发送`Request`和接收`Response`的，在Feign中`Client`是一个接口，它有一个默认实现：`Client.Default`。`Client.Default`是通过`HttpURLConnection`来实现网络请求的，Feign的`Client`接口还支持`HttpClient`和`OkHttp`来实现网络请求。
 
+​	在Spring Cloud Netflix中，Feign的配置信息是来自于`FeignRibbonClientAutoConfiguration`,
 
+```java
+//存在ILoadBalancer、Feign 执行这个Bean
+@ConditionalOnClass({ILoadBalancer.class, Feign.class})
+@Configuration //配置类
+@AutoConfigureBefore({FeignAutoConfiguration.class}) //在FeignAutoConfiguration之前
+// 导入HttpClientFeignLoadBalancedConfiguration、OkHttpFeignLoadBalancedConfiguration和DefaultFeignLoadBalancedConfiguration三个配置类，分别对应HttpClient、OKHttpClient和FeignRibbonClient
+@Import({HttpClientFeignLoadBalancedConfiguration.class, OkHttpFeignLoadBalancedConfiguration.class, DefaultFeignLoadBalancedConfiguration.class})
+public class FeignRibbonClientAutoConfiguration {
+    public FeignRibbonClientAutoConfiguration() {
+    }
 
+    @Bean
+    @Primary
+    @ConditionalOnMissingClass({"org.springframework.retry.support.RetryTemplate"})
+    public CachingSpringLoadBalancerFactory cachingLBClientFactory(SpringClientFactory factory) {
+        return new CachingSpringLoadBalancerFactory(factory);
+    }
 
+    @Bean
+    @Primary
+    @ConditionalOnClass(
+        name = {"org.springframework.retry.support.RetryTemplate"}
+    )
+    public CachingSpringLoadBalancerFactory retryabeCachingLBClientFactory(SpringClientFactory factory, LoadBalancedRetryPolicyFactory retryPolicyFactory) {
+        return new CachingSpringLoadBalancerFactory(factory, retryPolicyFactory, true);
+    }
 
+    @Bean
+    @ConditionalOnMissingBean
+    public Options feignRequestOptions() {
+        return LoadBalancerFeignClient.DEFAULT_OPTIONS;
+    }
+}
+```
 
+​	上面代码中@Import中导入了三个配置类，分别对应HttpClient、OKHttpClient和默认的FeignRibbonClient，根据`feign.XXX.enabled`的参数值进行配置，选择使用不同的客户端实现。
 
+* `HttpClientFeignLoadBalancedConfiguration` 
 
+  * pom.xml
 
+    ```xml
+    <dependency>
+        <groupId>com.netflix.feign</groupId>
+        <artifactId>feign-core</artifactId>
+        <version>RELEASE</version>
+    </dependency>
+    ```
 
+  * application.yml 
 
+    ```yaml
+    feign:
+    	httpclient:
+    		enabled: true
+    ```
 
+    也可以不设置，配置类上面设置：
 
+    ```java
+    @ConditionalOnClass(ApacheHttpClient.class) // 类路径下有ApacheHttpClient则创建
+    @ConditionalOnProperty(value = "feign.httpclient.enabled", matchIfMissing = true) // 属性值默认为true
+    ```
 
+* `OkHttpFeignLoadBalancedConfiguration`
+
+  * pom.xml
+
+    ```xml
+    <dependency>
+         <groupId>com.netflix.feign</groupId>
+         <artifactId>feign-okhttp</artifactId>
+         <version>8.18.0</version>
+    </dependency>
+    ```
+
+  * application.yml
+
+    ```yml
+    feign:
+    	okhttp:
+    		enabled: true
+    ```
+
+    也可以不设置，配置类上面设置：
+
+    ```java
+    @ConditionalOnClass(OkHttpClient.class)// 类路径下有OkHttpClient则创建
+    @ConditionalOnProperty(value = "feign.okhttp.enabled", matchIfMissing = true)// 属性值默认为true
+    ```
+
+* `DefaultFeignLoadBalancedConfiguration`
+
+  * 默认值
+
+### 5.6 Feign Client负载均衡
+
+​		在`FeignRibbonClientAutoConfiguration`类中配置了Client的类型，最终注入到容器的中实现类`LoadBalancerFeignClient`,即负载均衡客户端。查看LoadBalancerFeignClient类中的execute方法：
+
+```java
+@Override
+	public Response execute(Request request, Request.Options options) throws IOException {
+		try {
+			URI asUri = URI.create(request.url());
+			String clientName = asUri.getHost();
+			URI uriWithoutHost = cleanUrl(request.url(), clientName);
+			FeignLoadBalancer.RibbonRequest ribbonRequest = new FeignLoadBalancer.RibbonRequest(
+					this.delegate, request, uriWithoutHost);
+
+			IClientConfig requestConfig = getClientConfig(options, clientName);
+            // executeWithLoadBalancer就是通过负载均衡的方式执行网络请求
+			return lbClient(clientName).executeWithLoadBalancer(ribbonRequest,
+					requestConfig).toResponse();
+		}
+		catch (ClientException e) {
+			IOException io = findIOException(e);
+			if (io != null) {
+				throw io;
+			}
+			throw new RuntimeException(e);
+		}
+	}
+```
+
+`executeWithLoadBalancer`
+
+```java
+public T executeWithLoadBalancer(final S request, final IClientConfig requestConfig) throws ClientException {
+        RequestSpecificRetryHandler handler = getRequestSpecificRetryHandler(request, requestConfig);
+       // 创建LoadBalancerCommand
+        LoadBalancerCommand<T> command = LoadBalancerCommand.<T>builder()
+                .withLoadBalancerContext(this)
+                .withRetryHandler(handler)
+                .withLoadBalancerURI(request.getUri())
+                .build();
+
+        try {
+            // 由load balancer选出server进行异步网络调用
+            return command.submit(
+                new ServerOperation<T>() {
+                    @Override
+                    public Observable<T> call(Server server) {
+                        // 计算出最终请求的url 实现负载均衡
+                        URI finalUri = reconstructURIWithServer(server, request.getUri());
+                        S requestForServer = (S) request.replaceUri(finalUri);
+                        try {
+                            return Observable.just(AbstractLoadBalancerAwareClient.this.execute(requestForServer, requestConfig));
+                        } 
+                        catch (Exception e) {
+                            return Observable.error(e);
+                        }
+                    }
+                })
+                .toBlocking()
+                .single();
+        } catch (Exception e) {
+            Throwable t = e.getCause();
+            if (t instanceof ClientException) {
+                throw (ClientException) t;
+            } else {
+                throw new ClientException(e);
+            }
+        }
+        
+    }
+```
+
+在command.submit方法中有一个selectServer()方法，就是选择服务进行负载均衡的方法：
+
+```java
+private Observable<Server> selectServer() {
+        return Observable.create(new OnSubscribe<Server>() {
+            @Override
+            public void call(Subscriber<? super Server> next) {
+                try {
+                    // 获取服务端
+                    Server server = loadBalancerContext.getServerFromLoadBalancer(loadBalancerURI, loadBalancerKey);   
+                    next.onNext(server);
+                    next.onCompleted();
+                } catch (Exception e) {
+                    next.onError(e);
+                }
+            }
+        });
+    }
+```
+
+由上述代码可知 最终负载均衡交给 loadBancerContext 来处理，就是Ribbon来处理。
+
+### 5.7 总结
 
 总到来说，Feign的源码实现的过程如下：
 
-- 首先通过@EnableFeignCleints注解开启FeignCleint
-
+- 首先通过@EnableFeignCleints注解开启FeignCleint的功能。只有这个注解存在，才会在程序启动时开启对＠FeignClien 注解的包扫描
 - 根据Feign的规则实现接口，并加@FeignCleint注解
-
-- 程序启动后，会进行包扫描，扫描所有的@ FeignCleint的注解的类，并将这些信息注入到ioc容器中。
-
-- 当接口的方法被调用，通过jdk的代理，来生成具体的RequesTemplate
+- 程序启动后，会进行包扫描，扫描所有的@FeignCleint的注解的类，并将这些信息注入到ioc容器中。
+- 当接口的方法被调用，通过jdk的代理，来生成具体的RequesTemplate模板对象
 
   - Client(接口) - Feign(抽象类) - ReflectiveFeign(实现类)。 
   - InvocationHandlerFactory(接口) - SynchronousMethodHandler(实现类) 
-
-- RequesTemplate在生成Request
-
-- Request交给Client去处理，其中Client可以是HttpUrlConnection、HttpClient也可以是Okhttp
-
+- 根据RequesTemplate再生成Http请求的Request
+- Request对象交给Client去处理，其中Client可以是HttpUrlConnection、HttpClient和Okhttp
 - 最后Client被封装到LoadBalanceClient类，这个类结合类Ribbon做到了负载均衡。
 
-  
+
+
+## 六、[Hysterix 熔断器](https://github.com/Netflix/Hystrix)
+
+> 参考文档可以查看`https://www.cnblogs.com/yepei/p/7169127.html`
+>
+> 官方文档查看` https://github.com/Netflix/Hystrix`
+
+### 6.1 什么是**Hysterix**
+
+​	在一个分布式系统里，服务与服务之间的依赖错综复杂，许多依赖不可避免的会调用失败，比如超时、异常等，导致于依赖他们服务出现远程调用的线程阻塞。如何能够保证在一个依赖出问题的情况下，不会导致整体服务失败，这个就是Hystrix需要做的事情。Hystrix提供了熔断、隔离、Fallback、cache、监控等功能，能够在一个、或多个依赖同时出现问题时保证系统依然可用。Hystrix是通过隔离服务的访问点阻止联动故障的，并提供了故障解决方案，从而提高了整个系统的弹性
+
+### 6.2Hysterix干什么的
+
+​	在复杂的分布式系统中，可能有几十个服务相互依赖，这些服务由于某些原因，例如机房的不可靠性、网络服务商的不可 ，导致某个服务不可用。如果系统不隔离该不可用的服务，可能导致整个系统不可用。
+​	例如，对于依赖 30 个服务的应用程序，每个服务的正常运行时间为 99.99% ，对于单个服务来说， 99.99% 的可用是非常完完美的。
+​	99.99的30次方 = 99.7%的可正常运行时间和 0.3% 的不可用时间，那么 10 亿次请求中有 3000000次失败，实际的情况可能比这更糟糕。
+​		如果不设计整个系统的韧性，即使所有依赖关系表现良好，单个服务只有 0.01% 的不可用，由于整个系统的服务相互依赖，最终对整个系统的影响是非常大的。
+​		在微服务系统中，一个用户请求可能需要调用几个服务才能完成。如下图所示，在所有的服务都处于可用状态时，一个用户请求需要调用A、P、H和I服务。
+
+![](http://dl2.iteye.com/upload/attachment/0103/1037/887e7862-578a-3616-a15c-1ef1cb62f3c4.png)
+
+当某一个服务，例如**服务I**，出现网络延迟或者故障时，即使**服务A**可用，由于**I服务**的不可用，整个用户请求会处于阻塞状态，并等待服务I的响应.
+
+![](http://dl2.iteye.com/upload/attachment/0103/1039/3bd6d0be-9ce5-35c2-bbd9-3493671b45d5.png)
+
+当**服务I**阻塞时,大多数服务器的线程池就出现阻塞(BLOCK),影响整个线上服务的稳定性.如下图:
+
+![](http://dl2.iteye.com/upload/attachment/0103/1041/22f20da1-4096-314c-8c9f-5728251c46af.png)
+
+​	在高并发的情况下，单个服务的延迟会导致整个请求都处于延迟状态，可能在几秒钟就使整个服务处于线程负载饱和的状态。
+​		某个服务的单个点的请求故障会导致用户的请求处于阻塞状态，最终的结果就是整个服务的线程资源消耗殆尽。由于服务的依赖性，会导致依赖于该故障服务的其他服务也处于线程阻塞状态，最终导致这些服务的线程资源消耗殆尽 直到不可用，从而导致整个问服务系统都不可用，即雪崩效应。
+​		为了防止雪崩效应，因而产生了熔断器模型。 Hystrix 是在业界表现非常好的 个熔断器模型实现的开源组件，它是 Spring Cloud 组件不可缺少的 部分。
+
+### 6.3 Hysterix设计原则
+
+总的来说， Hystrix 的设计原则如下。
+
+* 防止单个服务的故障耗尽整个服务的 Servlet 容器（例如 Tomcat ）的线程资源。
+* 快速失败机制，如果某个服务出现了故障，则调用该服务的请求快速失败，而不是线程等待。
+* 提供回退（ fallback ）方案，在请求发生故障时，提供设定好的回退方案。
+* 使用熔断机制，防止故障扩散到其他服务。
+* 提供熔断器的监控组件 Hystrix Dashboard ，可以实时监控熔断器的状态
+
+### 6.4 工作机制
+
+​		首先，当服务的某个 API 接口的失败次数在一定时间内小于设定的阀值时，熔断器处于关闭状态，该 API接口正常提供服务 。当该API 接口处理请求的失败次数大于设定的阀值时， Hystrix 判定该 API 接口出现了故障，打开
+熔断器，这时请求该 API 接口会执行快速失败的逻辑（即 fallback回退的逻辑），不执行业务逻辑，请求的线程不会处于阻塞状态。处于打开状态的熔断器，一段段时间后会处于半打开状态，并将一定数量的请求执行正常逻辑。剩余的请求会执行快速失败，若执行正常逻辑的请求失败了，则熔断器继续打开；若成功了 ，则将熔断器关闭。这样熔断器就具有了自我修复的能力。
+
+#### 6.1Hystrix如何解决依赖隔离
+
+1:Hystrix使用命令模式HystrixCommand(Command)包装依赖调用逻辑，每个命令在单独线程中/信号授权下执行。
+
+2:可配置依赖调用超时时间,超时时间一般设为比99.5%平均时间略高即可.当调用超时时，直接返回或执行fallback逻辑。
+
+3:为每个依赖提供一个小的线程池（或信号），如果线程池已满调用将被立即拒绝，默认不采用排队.加速失败判定时间。
+
+4:依赖调用结果分:成功，失败（抛出异常），超时，线程拒绝，短路。 请求失败(异常，拒绝，超时，短路)时执行fallback(降级)逻辑。
+
+5:提供熔断器组件,可以自动运行或手动调用,停止当前依赖一段时间(10秒)，熔断器默认错误率阈值为50%,超过将自动运行。
+
+6:提供近实时依赖的统计和监控
+
+Hystrix依赖的隔离架构,如下图:
+
+![](http://dl2.iteye.com/upload/attachment/0103/1043/8db93de3-db14-355f-ac70-16d06481b020.png)
