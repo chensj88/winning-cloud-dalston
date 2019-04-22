@@ -10,6 +10,7 @@
         <module>eureka-ribbon-client-dalston</module>
         <module>ribbon-client-dalston</module>
         <module>eureka-feign-client-dalston</module>
+        <module>spring-boot-learn</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>

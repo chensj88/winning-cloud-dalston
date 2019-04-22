@@ -4,163 +4,174 @@
 
 ### 1.1 Spring 注解
 
-* `@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)`
+#### `@SpringBootTest`
 
-  * 为Web 测试环境的端口为随机端口的配置
+​	@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 
-* `@ConfigurationProperties`
+​	为Web 测试环境的端口为随机端口的配置
 
-  * 设置属性的信息 如`prefix`就是前缀
+#### `@ConfigurationProperties`
 
-* `@PathVariable`
+​	设置属性的信息 如`prefix`就是前缀
 
-  * 可以获取`RESTful`风格的`Uri`路径上的参数。
+#### `@PathVariable`
 
-* `@EnableEurekaServer`
+​	可以获取`RESTful`风格的`Uri`路径上的参数。
 
-  * 开启Eureka Server
+#### `@EnableEurekaServer`
 
-* `@EnableEurekaClient`
+​	开启Eureka Server
 
-  * 开启Eureka Client
+#### `@EnableEurekaClient`
 
-* `@EnableDiscoveryClient`
-  * 开启客户端注册
-  > spring cloud中discovery service有许多种实现（eureka、consul、zookeeper等等），
-  > `@EnableDiscoveryClient`基于`spring-cloud-commons`, 
-  > `@EnableEurekaClient`基于`spring-cloud-netflix`。
-  > 其实用更简单的话来说，就是如果选用的注册中心是`eureka`，那么就推荐`@EnableEurekaClient`，
-  > 如果是其他的注册中心，那么推荐使用`@EnableDiscoveryClient`。
+开启Eureka Client
 
-* `@Import(EurekaServerInitializerConfiguration.class)`
+#### `@EnableDiscoveryClient`
 
-  * 将标记的class注入到spring IOC容器中
+开启客户端注册
 
-  * 只能注解在类上，以及唯一的参数value上可以配置3种类型的值Configuration，ImportSelector，ImportBeanDefinitionRegistrar
+> spring cloud中discovery service有许多种实现（eureka、consul、zookeeper等等），
+> `@EnableDiscoveryClient`基于`spring-cloud-commons`, 
+> `@EnableEurekaClient`基于`spring-cloud-netflix`。
+> 其实用更简单的话来说，就是如果选用的注册中心是`eureka`，那么就推荐`@EnableEurekaClient`，
+> 如果是其他的注册中心，那么推荐使用`@EnableDiscoveryClient`。
 
-    * **基于Configuration也就是直接填对应的class数组**
+#### `@Import`
 
-      ```java 
-      @Import({Square.class,Circular.class})
-      ```
+​	`@Import(EurekaServerInitializerConfiguration.class)`
 
-    * **基于自定义ImportSelector的使用**
+* 将标记的class注入到spring IOC容器中
+
+* 只能注解在类上，以及唯一的参数value上可以配置3种类型的值Configuration，ImportSelector，ImportBeanDefinitionRegistrar
+
+  * **基于Configuration也就是直接填对应的class数组**
+
+    ```java 
+    @Import({Square.class,Circular.class})
+    ```
+
+  * **基于自定义ImportSelector的使用**
+
+    ```java
+    /**
+     * 定义一个我自己的ImportSelector
+     *
+     * @author zhangqh
+     * @date 2018年5月1日
+     */
+    public class MyImportSelector implements  ImportSelector{
+        public String[] selectImports(AnnotationMetadata importingClassMetadata) {
+            return new String[]{"com.zhang.bean.Triangle"};
+        }
+    }
+    
+    // 使用@Import
+    @Import({Square.class,Circular.class,MyImportSelector.class})
+    ```
+
+  * **基于ImportBeanDefinitionRegistrar的使用**
 
       ```java
       /**
-       * 定义一个我自己的ImportSelector
+       * 定义一个自定的ImportBeanDefinitionRegistrar
        *
        * @author zhangqh
        * @date 2018年5月1日
        */
-      public class MyImportSelector implements  ImportSelector{
-          public String[] selectImports(AnnotationMetadata importingClassMetadata) {
-              return new String[]{"com.zhang.bean.Triangle"};
+      public class MyImportBeanDefinitionRegistrar  implements ImportBeanDefinitionRegistrar{
+          public void registerBeanDefinitions(
+                  AnnotationMetadata importingClassMetadata,
+                  BeanDefinitionRegistry registry) {
+              // new一个RootBeanDefinition
+              RootBeanDefinition rootBeanDefinition = new RootBeanDefinition(Rectangle.class);
+              // 注册一个名字叫rectangle的bean
+              registry.registerBeanDefinition("rectangle", rootBeanDefinition);
           }
       }
-      
+
       // 使用@Import
-      @Import({Square.class,Circular.class,MyImportSelector.class})
+      @Import({Square.class,Circular.class,MyImportSelector.class,MyImportBeanDefinitionRegistrar.class})
       ```
 
-    * **基于ImportBeanDefinitionRegistrar的使用**
+#### `@Conditional`
 
-        ```java
-        /**
-         * 定义一个自定的ImportBeanDefinitionRegistrar
-         *
-         * @author zhangqh
-         * @date 2018年5月1日
-         */
-        public class MyImportBeanDefinitionRegistrar  implements ImportBeanDefinitionRegistrar{
-            public void registerBeanDefinitions(
-                    AnnotationMetadata importingClassMetadata,
-                    BeanDefinitionRegistry registry) {
-                // new一个RootBeanDefinition
-                RootBeanDefinition rootBeanDefinition = new RootBeanDefinition(Rectangle.class);
-                // 注册一个名字叫rectangle的bean
-                registry.registerBeanDefinition("rectangle", rootBeanDefinition);
-            }
-        }
+`@Conditional`是Spring4新提供的注解，它的作用是按照一定的条件进行判断，满足条件给容器注册bean。
 
-        // 使用@Import
-        @Import({Square.class,Circular.class,MyImportSelector.class,MyImportBeanDefinitionRegistrar.class})
-        ```
-  
-* `@Conditional`
+```java
+//此注解可以标注在类和方法上
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME) 
+@Documented
+public @interface Conditional {
+    Class<? extends Condition>[] value();
+}
+```
 
-  `@Conditional`是Spring4新提供的注解，它的作用是按照一定的条件进行判断，满足条件给容器注册bean。
+从代码中可以看到，需要传入一个Class数组，并且需要继承Condition接口：
 
-  ```java
-  //此注解可以标注在类和方法上
-  @Target({ElementType.TYPE, ElementType.METHOD})
-  @Retention(RetentionPolicy.RUNTIME) 
-  @Documented
-  public @interface Conditional {
-      Class<? extends Condition>[] value();
-  }
-  ```
+```java
+public interface Condition {
+    boolean matches(ConditionContext var1, AnnotatedTypeMetadata var2);
+}
+```
 
-  从代码中可以看到，需要传入一个Class数组，并且需要继承Condition接口：
+Condition是个接口，需要实现matches方法，返回true则注入bean，false则不注入。
 
-  ```java
-  public interface Condition {
-      boolean matches(ConditionContext var1, AnnotatedTypeMetadata var2);
-  }
-  ```
+#### `@ConditionalOnMissingBean`
 
-  Condition是个接口，需要实现matches方法，返回true则注入bean，false则不注入。
+（仅仅在当前上下文中不存在某个对象时，才会实例化一个Bean）
 
-* `@ConditionalOnMissingBean`
+该注解表示，如果存在它修饰的类的bean，则不需要再创建这个bean
 
-  （仅仅在当前上下文中不存在某个对象时，才会实例化一个Bean）
+如果当前容器中已经有bean了，就不注入备用bean，如果没有，则注入备用bean
 
-  该注解表示，如果存在它修饰的类的bean，则不需要再创建这个bean
+#### `@ConditionalOnClass`
 
-  如果当前容器中已经有bean了，就不注入备用bean，如果没有，则注入备用bean
+（某个class位于类路径上，才会实例化一个Bean）
 
-* `@ConditionalOnClass`
+​	该注解的参数对应的类必须存在，否则不解析该注解修饰的配置类
 
-  （某个class位于类路径上，才会实例化一个Bean）
+注解@ConditionalOnClass和@Bean,可以仅当某些类存在于 classpath 上时候才创建某个Bean
 
-  ​	该注解的参数对应的类必须存在，否则不解析该注解修饰的配置类
+常规使用代码如下：
 
-  注解@ConditionalOnClass和@Bean,可以仅当某些类存在于 classpath 上时候才创建某个Bean
+```java
+ // 仅当类 java.util.HashMap 存在于 classpath 上时才创建一个bean : beanA
+ // 注意这里使用了 @ConditionalOnClass 的属性value，
+ @Bean
+ @ConditionalOnClass(value={java.util.HashMap.class})
+ public A beanA(){}
+ // 仅当类 com.sample.Dummy 存在于 classpath 上时才创建一个bean : beanB
+ // 注意这里使用了 @ConditionalOnClass 的属性 name，
+ @Bean
+ @ConditionalOnClass(name="com.sample.Dummy")
+ public B beanB(){}
+```
 
-  常规使用代码如下：
+`name`or `value`
 
-  ```java
-   // 仅当类 java.util.HashMap 存在于 classpath 上时才创建一个bean : beanA
-   // 注意这里使用了 @ConditionalOnClass 的属性value，
-   @Bean
-   @ConditionalOnClass(value={java.util.HashMap.class})
-   public A beanA(){}
-   // 仅当类 com.sample.Dummy 存在于 classpath 上时才创建一个bean : beanB
-   // 注意这里使用了 @ConditionalOnClass 的属性 name，
-   @Bean
-   @ConditionalOnClass(name="com.sample.Dummy")
-   public B beanB(){}
-  ```
+- `name` : 不确定指定类在`classpath` 上
+- `value` : 确定指定类在 `classpath` 上
 
-  `name`or `value`
+#### @ConditionalOnBean
 
-  - `name` : 不确定指定类在`classpath` 上
-  - `value` : 确定指定类在 `classpath` 上
+​	仅仅在当前上下文中存在某个对象时，才会实例化一个Bean
 
-* @ConditionalOnBean
+#### @ConditionalOnExpression
 
-  ​	仅仅在当前上下文中存在某个对象时，才会实例化一个Bean
+​	当表达式为true的时候，才会实例化一个Bean
 
-* @ConditionalOnExpression
+#### @ConditionalOnMissingClass
 
-   当表达式为true的时候，才会实例化一个Bean
+​	某个class类路径上不存在的时候，才会实例化一个Bean）
 
-* @ConditionalOnMissingClass（
+#### @ConditionalOnNotWebApplication
 
-   某个class类路径上不存在的时候，才会实例化一个Bean）
+（不是web应用）
 
-* @ConditionalOnNotWebApplication
-	（不是web应用）
+#### `@Autowired` 
+
+用来注入已有的bean,required`默认为true，当为false的时候，表示忽略当前要注入的bean，如果有直接注入，没有跳过，不会报错
 
 
 ### 1.2 java元注解
@@ -184,8 +195,6 @@ java中元注解有四个： @Retention @Target @Document @Inherited；
 @Document：说明该注解将被包含在javadoc中
 @Inherited：说明子类可以继承父类中的该注解
 ```
-
-
 
 ## 二、坑点
 
@@ -1838,17 +1847,27 @@ public @interface FeignClient {
 
 ### 5.3 FeignClient配置
 
-#### 5.3.1 FeignClient配置类源码
+#### 5.3.1 [FeignClient配置类源码](https://cloud.spring.io/spring-cloud-static/spring-cloud-netflix/1.3.6.RELEASE/single/spring-cloud-netflix.html#spring-cloud-feign-overriding-defaults)
 
-​		`FeignClient`默认的配置类是`FeignClientsConfiguration`,这个类在`spring-cloud-netflix.core`的jar包下。打开这个类，可以发现这个类注入了很多`Feign`相关的配置`Bean`,包括`FeignRetryer`、`FeignLoggerFactory`和`FormattingConversionService`等。另外`Decoder`、`Encoder` 和`Contract`
-这3个类在没有Bean被注入的情况下，会自动注入默认配置的Bean ，即`ResponseEntityDecoderc`、
-`SpringEncoder`和`SpringMvcContract` 。默认注入的配置如下:
+> A central concept in Spring Cloud’s Feign support is that of the named client.
+> Spring Cloud的Feign支持的核心概念是指定客户端的概念。
+> Each feign client is part of an ensemble of components that work together to contact a remote server on demand,
+> 每个客户端都是组件集合的一部分，它们一起工作并且按需联系远程服务器，
+> and the ensemble has a name that you give it as an application developer using the `@FeignClient` annotation.
+> 这样的集合都有一个名称，应用程序开发人员可以使用`@FeignClient`注解来提供名称。
+> Spring Cloud creates a new ensemble as an `ApplicationContext` on demand for each named client using `FeignClientsConfiguration`.
+> Spring Cloud 根据ApplicationContext需要为每个命名客户端创建一个基于`FeignClientsConfiguration`创建新的集合
+> This contains (amongst other things) an `feign.Decoder`, a `feign.Encoder`, and a `feign.Contract`.
+> 这些包含`feign.Decoder`、 `feign.Encoder`和 `feign.Contract`
 
-* Decoder feignDecoder:ResponseEntityDecoder
-* Encoder feignEncoder: SpringEncoder
-* Contract feignContract: SpringMvcContract
-* Logger logger: Slf4jLogger
-* Feign.Builder feignBuilder:  HystrixFeign.builder()
+​	`FeignClient`默认的配置类是`FeignClientsConfiguration`,这个类在`spring-cloud-netflix.core`的jar包下。打开这个类，可以发现这个类注入了很多`Feign`相关的配置`Bean`,包括`FeignRetryer`、`FeignLoggerFactory`和`FormattingConversionService`等。Spring Cloud Netiflix默认为如下的bean提供默认的注入Bean类型:
+
+* `Decoder`feignDecoder :( `ResponseEntityDecoder`包装一个`SpringDecoder`）
+* `Encoder` feignEncoder： `SpringEncoder`
+* `Logger` feignLogger： `Slf4jLogger`
+* `Contract` feignContract： `SpringMvcContract`
+* `Feign.Builder` feignBuilder： `HystrixFeign.Builder`
+* `Client`feignClient：如果启用了Ribbon，则为`LoadBalancerFeignClient`，否则使用默认的feignClient。
 
 `FeignClientsConfiguration`的配置类部分代码如下，`@ConditionalOnMissingBean`注解表示，如果没有注入该类的 Bean 会默认注入一个 Bean
 
@@ -1872,9 +1891,9 @@ public Contract feignContract(ConversionService feignConversionService) {
 }
 ```
 
-重写配置
+#### 5.3.2 [重写配置](https://cloud.spring.io/spring-cloud-static/spring-cloud-netflix/1.3.6.RELEASE/single/spring-cloud-netflix.html#spring-cloud-feign-overriding-defaults)
 
-重写`FeignClientsConfiguration`类中的Bean覆盖掉默认的配置Bean ,从而达到自定义配置的目的。例如Feign默认的配置在请求失败后，重试次数为`Retryer.NEVER_RETRY`，即不重试。现在希望在请求失败后能够重试，这时需要写个配置FeignConfig类，在该类中注`Retryer`的Bean覆盖掉默认的`Retryer`的Bean，并将FeignConfig类定为FeignClient配置类FeignConfig类。
+​		重写`FeignClientsConfiguration`类中的Bean覆盖掉默认的配置Bean ,从而达到自定义配置的目的。例如Feign默认的配置在请求失败后，重试次数为`Retryer.NEVER_RETRY`，即不重试。现在希望在请求失败后能够重试，这时需要写个配置FeignConfig类，在该类中注`Retryer`的Bean覆盖掉默认的`Retryer`的Bean，并将FeignConfig类定为FeignClient配置类FeignConfig类。
 
 ```java
 @Configuration
@@ -1890,15 +1909,48 @@ public class FeignClientConfig {
 }
 ```
 
-​	通过覆盖了默认的 Retryer的Bean更改了该 FeignClient请求失败重试的策略，重试问隔为 100 毫秒，最大重试时间为1秒，重试次数为5次。
+​	通过覆盖了默认的`Retryer`的Bean更改了该`FeignClient`请求失败重试的策略，重试问隔为 100 毫秒，最大重试时间为1秒，重试次数为5次。
 
 ### 5.4 Feign源码
 
-​	Feign是一个伪客户端，即它不做任何的请求处理。Feign通过处理注解生成request，从而实现简化HTTP API开发的目的，即开发人员可以使用注解的方式定制request api模板，在发送http request请求之前，feign通过处理注解的方式替换掉request模板中的参数，这种实现方式显得更为直接、可理解。
+​		`Feign`是一个伪Java Http客户端，`Feign`不做任何的请求处理。`Feign`通过处理注解生成`Request`，从而实现简化`HTTP API`开发的目的，即开发人员可以使用注解的方式定制`Request API`模板，在发送`Http Request`请求之前，`feign`通过处理注解的方式替换掉`Request `模板中的参数，这种实现方式显得更为直接、可理解。
 
-​		Feign通过包扫描注入FeignClient的bean，该源码在FeignClientsRegistrar类。程序启动时，首先在启动配置上检查是否有@EnableFeignClients注解，如果有该注解，则开启包扫描，扫描被@FeignClient注解接口。代码如下：
+`@EnableFeignClients`源码
 
-#### 5.4.1 `registerDefaultConfiguration` 扫描是否使用Feign
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+@Documented
+@Import({FeignClientsRegistrar.class})
+public @interface EnableFeignClients {
+    String[] value() default {};
+
+    String[] basePackages() default {};
+
+    Class<?>[] basePackageClasses() default {};
+
+    Class<?>[] defaultConfiguration() default {};
+
+    Class<?>[] clients() default {};
+}
+```
+
+​		从`@EnableFeignClients`源码中可以看出，使用这个注解的时候，会将`FeignClientsRegistrar`这个类注入到IOC容器中，查看`FeignClientsRegistrar`的源码，发现这个类是用来动态加载Bean的(`ImportBeanDefinitionRegistrar`)，注册方法是`registerBeanDefinitions`，在这个方法中就会有FeignClient默认配置加载、FeignClient的扫描与注册到IOC。
+
+```java
+	@Override
+	public void registerBeanDefinitions(AnnotationMetadata metadata,
+			BeanDefinitionRegistry registry) {
+        // 默认配置FeignClientsConfiguration
+		registerDefaultConfiguration(metadata, registry);
+        // 包扫描
+		registerFeignClients(metadata, registry);
+	}
+```
+
+​	程序启动时，首先在启动配置上检查是否有`@EnableFeignClients`注解，如果有该注解，则开启包扫描，扫描被`@FeignClient`注解接口。代码如下：
+
+#### 5.4.1  默认配置FeignClientsConfiguration处理
 
 ```java
 private void registerDefaultConfiguration(AnnotationMetadata metadata,
@@ -1919,8 +1971,6 @@ private void registerDefaultConfiguration(AnnotationMetadata metadata,
 		}
 }
 ```
-
-​	
 
 #### 5.4.2 包扫描
 
@@ -1995,7 +2045,7 @@ public void registerFeignClients(AnnotationMetadata metadata,
 	}
 ```
 
-#### 5.4.2 FeignConfig注册
+#### 5.4.2 Feign Client 对应的FeignConfig注册
 
 registerClientConfiguration方法  注册FeignClient对应的FeignConfig，注册到IOC容器中
 
@@ -2052,9 +2102,14 @@ private void registerFeignClient(BeanDefinitionRegistry registry,
 	}
 ```
 
-#### 5.4.4 Feign Client使用(拦截)
+#### 5.4.4 Feign Client使用
 
-注入bean之后，通过jdk的代理，当请求Feign Client的方法时会被拦截，代码在ReflectiveFeign类，代码如下：
+在Feign Client使用的过程存在以下两个线：
+
+* Client(接口) - Feign(抽象类) - ReflectiveFeign(实现类)。 
+* InvocationHandlerFactory(接口) - SynchronousMethodHandler(实现类) 
+
+​		注入bean之后，通过jdk的代理，当请求Feign Client的方法时会被拦截，代码在`ReflectiveFeign`类，代码如下：
 
 ```java
 public <T> T newInstance(Target<T> target) {
@@ -2135,12 +2190,41 @@ public <T> T newInstance(Target<T> target) {
   }
 ```
 
+### 5.5 Feign 使用HttpClient和OkHttp
+
+​		从上面的代码中可以看出，`Client`是最终发送`Request`和接收`Response`的，在Feign中`Client`是一个接口，它有一个默认实现：`Client.Default`。`Client.Default`是通过`HttpURLConnection`来实现网络请求的，Feign的`Client`接口还支持`HttpClient`和`OkHttp`来实现网络请求。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 总到来说，Feign的源码实现的过程如下：
 
 - 首先通过@EnableFeignCleints注解开启FeignCleint
+
 - 根据Feign的规则实现接口，并加@FeignCleint注解
+
 - 程序启动后，会进行包扫描，扫描所有的@ FeignCleint的注解的类，并将这些信息注入到ioc容器中。
+
 - 当接口的方法被调用，通过jdk的代理，来生成具体的RequesTemplate
+
+  - Client(接口) - Feign(抽象类) - ReflectiveFeign(实现类)。 
+  - InvocationHandlerFactory(接口) - SynchronousMethodHandler(实现类) 
+
 - RequesTemplate在生成Request
+
 - Request交给Client去处理，其中Client可以是HttpUrlConnection、HttpClient也可以是Okhttp
+
 - 最后Client被封装到LoadBalanceClient类，这个类结合类Ribbon做到了负载均衡。
+
+  
