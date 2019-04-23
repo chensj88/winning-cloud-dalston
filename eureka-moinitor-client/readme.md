@@ -1,0 +1,3 @@
+turbine  monitor
+
+eureka client

@@ -22,6 +22,7 @@
         <module>eureka-ribbon-hystrix-client-dalston</module>
         <!--eureka client feign hystrix-->
         <module>eureka-feign-hystrix-client-dalston</module>
+        <module>eureka-moinitor-client</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>

@@ -1,24 +1,25 @@
 server:
-  port: 8766
+  port: 8769
 spring:
   application:
-    name: eureka-ribbon-hystrix-client
+    name: turbine-monitor
   devtools:
     restart:
       enabled: true
 eureka:
   instance:
     hostname: localhost
+    home-page-url:  https://${eureka.instance.hostname}:${server.port}/
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
     region: ch-east-1
-    healthcheck:
-      enabled: true
 # 监控配置
 management:
   security:
     enabled: false
+#  port: ${server.port}
+#  context-path: /moniter
 endpoints:
   enabled: true
   shutdown:
@@ -31,3 +32,6 @@ info:
       target: 1.8
     head: ${spring.application.name}
     body: Welcome, this is ${spring.application.name} @ ${server.port}
+turbine:
+  app-config: eureka-feign-hysrix-client,eureka-ribbon-hystrix-client
+  cluster-name-expression: new String("default")
