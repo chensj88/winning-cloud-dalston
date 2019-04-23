@@ -12,7 +12,7 @@
     <artifactId>eureka-ribbon-hystrix-client-dalston</artifactId>
 
     <description>
-        Eureka Client,Ribbon ,Hystrix 整合使用
+        Eureka Client,Ribbon ,Hystrix ,Hystrix Dashboard 整合使用
     </description>
 
     <dependencies>
@@ -27,6 +27,10 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-hystrix</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-hystrix-dashboard</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * @date: 2019-04-23 14:27
  */
 @Component
-public class HiHystrix implements EurekaFeignClient {
+public class EurekaFeignHystrix implements EurekaFeignClient {
     @Override
     public String sayHiFromFeignEurekaClient(String username) {
         return "Hi," +username +",sorry,error!";

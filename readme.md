@@ -273,7 +273,21 @@ ApiResponse disUseAble(@PathVariable String sn);   // wrong
 ApiResponse disUseAble(@PathVariable(value="sn") String sn);  // right
    ```
 
+### 2.4 hystrix 
 
+问题版本： **[Dalston.SR5]**
+
+​	在使用Hystrix的时候，`spring-boot-actuator`中配置的如下项目：
+
+```yaml
+management:
+  port: ${server.port}
+  context-path: /moniter
+```
+
+将会导致Hystrix Dashboard无法连接到监控后台，导致使用/hystrix.stream 无法显示当前ping的信息，
+
+需要将上面的参数删除后，即可显示信息。
 
 ## 三、[Eureka](https://github.com/Netflix/eureka/wiki) 治理中心
 

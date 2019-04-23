@@ -10,13 +10,13 @@ eureka:
   instance:
     hostname: localhost
     home-page-url:  https://${eureka.instance.hostname}:${server.port}/
-    status-page-url: http://${eureka.instance.hostname}:${management.port}${management.context-path}/info
+#    status-page-url: http://${eureka.instance.hostname}:${server.port}${management.context-path}/info
     # 配置健康监控页面
-    health-check-url: http://${eureka.instance.hostname}:${management.port}${management.context-path}/health
+#    health-check-url: http://${eureka.instance.hostname}:${server.port}${management.context-path}/health
     # 设置Instance ID
-    instance-id: ${spring.cloud.client.hostname}:${spring.application.name}:${spring.application.instance_id:${server.port}}
+    #instance-id: ${spring.cloud.client.hostname}:${spring.application.name}:${spring.application.instance_id:${server.port}}
     # 续约的时间间隔，默认为30s,不建议修改
-    lease-renewal-interval-in-seconds: 30
+    #lease-renewal-interval-in-seconds: 30
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
@@ -25,8 +25,8 @@ eureka:
 management:
   security:
     enabled: false
-  port: ${server.port}
-  context-path: /moniter
+#  port: ${server.port}
+#  context-path: /moniter
 endpoints:
   enabled: true
   shutdown:
@@ -39,4 +39,3 @@ info:
       target: 1.8
     head: ${spring.application.name}
     body: Welcome, this is ${spring.application.name} @ ${server.port}
-
