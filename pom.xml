@@ -11,6 +11,8 @@
         <module>ribbon-client-dalston</module>
         <module>eureka-feign-client-dalston</module>
         <module>spring-boot-learn</module>
+        <module>eureka-ribbon-hystrix-client-dalston</module>
+        <module>eureka-feign-hystrix-client-dalston</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
