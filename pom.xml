@@ -4,14 +4,23 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <modules>
+        <!--eureka server-->
         <module>eureka-server-dalston</module>
+        <!--eureka client-->
         <module>eureka-client-dalston</module>
+        <!--spring boot -->
         <module>spring-boot-dalston</module>
+        <!--eureka client ribbon-->
         <module>eureka-ribbon-client-dalston</module>
+        <!--ribbon client -->
         <module>ribbon-client-dalston</module>
+        <!--eureka client feign-->
         <module>eureka-feign-client-dalston</module>
+        <!--spring boot learn-->
         <module>spring-boot-learn</module>
+        <!--eureka client ribbon hystrix-->
         <module>eureka-ribbon-hystrix-client-dalston</module>
+        <!--eureka client feign hystrix-->
         <module>eureka-feign-hystrix-client-dalston</module>
     </modules>
     <parent>
