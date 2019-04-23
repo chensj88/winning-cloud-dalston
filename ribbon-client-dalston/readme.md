@@ -1,3 +1,7 @@
-netflix ribbon
+Netflix
 
-no eureka client
+* `Ribbon`
+
+> 不使用Eureka Client
+>
+> Ribbon 源码学习

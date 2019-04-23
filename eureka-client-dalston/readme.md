@@ -1,5 +1,11 @@
-eureka client 
+Netflix 
 
-包含一个服务
+* `Eureka Client`
 
-/hi/{username}
+
+## 服务
+
+* `/hi/{username}`
+
+    发送用户名，返回问候语
+    
