@@ -5,6 +5,7 @@ import com.winning.devops.ribbon.client.web.service.RibbonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,7 +26,7 @@ public class RestClientController {
     @Autowired
     private RibbonService ribbonService;
 
-    @PostMapping(value = "/hi/{username}")
+    @GetMapping(value = "/hi/{username}")
     public Map hi(@PathVariable String username){
         Map<String,Object> resultMap = new HashMap<>();
         resultMap.put("data",ribbonService.hi(username));
