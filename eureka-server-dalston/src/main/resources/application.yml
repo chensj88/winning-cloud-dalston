@@ -20,4 +20,4 @@ eureka:
     # 服务端缓存刷新时间
     response-cache-update-interval-ms: 30
     # 自我保护
-    enable-self-preservation: false
+#    enable-self-preservation: false
