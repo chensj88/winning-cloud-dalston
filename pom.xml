@@ -4,25 +4,46 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <modules>
-        <!--eureka server-->
+        <!--eureka 服务端-->
         <module>eureka-server-dalston</module>
-        <!--eureka client-->
+
+        <!--eureka 客户端-->
         <module>eureka-client-dalston</module>
-        <!--spring boot -->
-        <module>spring-boot-dalston</module>
-        <!--eureka client ribbon-->
+
+        <!--eureka client ribbon 客户端 集成Hystrix 和 Hystrix Dashboard-->
         <module>eureka-ribbon-client-dalston</module>
-        <!--ribbon client -->
-        <module>ribbon-client-dalston</module>
-        <!--eureka client feign-->
+
+        <!--eureka client+feign 集成Hystrix 和 Hystrix Dashboard -->
         <module>eureka-feign-client-dalston</module>
-        <!--spring boot learn-->
-        <module>spring-boot-learn</module>
-        <!--eureka client ribbon hystrix-->
-        <module>eureka-ribbon-hystrix-client-dalston</module>
-        <!--eureka client feign hystrix-->
-        <module>eureka-feign-hystrix-client-dalston</module>
+
+        <!--eureka turbine 监控-->
         <module>eureka-moinitor-client</module>
+
+        <!--eureka zuul 动态路由-->
+        <module>eureka-zuul-client-dalston</module>
+
+        <!--
+            下面的项目为测试使用，可以不使用
+            spring-boot-dalston
+                为spring boot 学习demo
+            spring-boot-learn
+                为学习ImportBeanDefinitionRegistrar接口使用
+            ribbon-client-dalston
+                ribbon client 单独使用，不需要集成到项目中
+            eureka-ribbon-hystrix-client-dalston
+                eureka client ribbon hystrix hystrix-dashboard 集成，功能已经迁移到eureka-ribbon-client-dalston
+            eureka-feign-hystrix-client-dalston
+                eureka client feign hystrix hystrix-dashboard 集成，功能已经迁移到eureka-feign-client-dalston
+
+        -->
+        <module>spring-boot-dalston</module>
+        <!--
+            <module>spring-boot-learn</module>
+            <module>ribbon-client-dalston</module>
+            <module>eureka-ribbon-hystrix-client-dalston</module>
+            <module>eureka-feign-hystrix-client-dalston</module>
+        -->
+
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>

@@ -1,5 +1,6 @@
 package com.winning.devops.feign.client.web.service;
 
+import com.winning.devops.feign.client.web.feign.EurekaFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

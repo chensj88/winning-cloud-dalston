@@ -18,6 +18,9 @@ public class Constants {
      * 失败标志
      */
     public static final String FAIL = "fail";
-
+    /**
+     * 默认eureka client名称
+     */
+    public static final String DEFAULT_EUREKA_CLIENT_NAME = "eureka-client";
 
 }

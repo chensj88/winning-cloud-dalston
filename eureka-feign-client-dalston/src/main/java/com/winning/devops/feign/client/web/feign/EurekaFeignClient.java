@@ -1,20 +1,22 @@
-package com.winning.devops.feign.client.web.service;
+package com.winning.devops.feign.client.web.feign;
 
 import com.winning.devops.feign.client.base.Constants;
 import com.winning.devops.feign.client.base.config.FeignClientConfig;
+import com.winning.devops.feign.client.web.hystrix.EurekaHystrixFeignHandler;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 /**
  * @author chensj
- * @title
+ * @title Feign 请求客户端
  * @project winning-cloud-dalston
  * @package com.winning.devops.feign.client.service
  * @date: 2019-04-21 4:28
  */
 @FeignClient(value = Constants.DEFAULT_EUREKA_CLIENT_NAME,
-             configuration = FeignClientConfig.class)
+             configuration = FeignClientConfig.class,
+            fallback = EurekaHystrixFeignHandler.class)
 public interface EurekaFeignClient {
     //A central concept in Spring Cloud’s Feign support is that of the named client.
     // Spring Cloud的Feign支持的核心概念是指定客户端的概念。
