@@ -1,6 +1,8 @@
-# JPA 注解
+# JPA
 
-## @Entity
+## JPA 注解
+
+### @Entity
 
 ```sql
 被Entity标注的实体类将会被JPA管理控制，在程序运行时，JPA会识别并映射到指定的数据库表
@@ -9,7 +11,7 @@
 如：select s from XXX s
 ```
 
-## @Table
+### @Table
 
 ```java
 当你想生成的数据库表名与实体类名称不同时，使用 @Table(name="数据库表名"),与@Entity标注并列使用，置于实体
@@ -28,13 +30,13 @@ public class student{
 * schema: 用于设置表所映射到的数据库的模式
 * uniqueConstraints: 设置约束条件
 
-## @Id
+### @Id
 
 ```java
 @Id 用于实体类的一个属性或者属性对应的getter方法的标注，被标注的的属性将映射为数据库主键
 ```
 
-## @GeneratedValue
+### @GeneratedValue
 
 ```java
 与@Id一同使用，用于标注主键的生成策略，通过 strategy 属性指定。默认是JPA自动选择合适的策略
@@ -46,7 +48,8 @@ public class student{
 - TABLE：通过表产生主键，框架借由表模拟序列产生主键，使用该策略更易于做数据库移植。
 ```
 
-## @Basic
+### @Basic
+
 ```
 @Basic表示一个简单的属性到数据库表的字段的映射,对于没有任何标注的 getXxxx() 方法,默认即为@Basic(fetch=FetechType.EAGER)
 @Basic参数：
@@ -57,7 +60,8 @@ public class student{
     表示该属性是否允许为null
 ```
 
-## @Column
+### @Column
+
 ```
 通常置于实体的属性声明之前，可与 @Id 标注一起使用
 @Column参数：
@@ -69,13 +73,13 @@ public class student{
   6. updatetable: 是否允许更新，默认为true
   7. columnDefinition: 指定该属性映射到数据库中的实际类型，通常是自动判断。
 ```
-## @Transient
+### @Transient
 
 ```
 JPA会忽略该属性，不会映射到数据库中，即程序运行后数据库中将不会有该字段
 ```
 
-## @Temporal
+### @Temporal
 
 ```
 Java中没有定义 Date 类型的精度，而数据库中，表示时间类型的数据有 DATE,TIME,TIMESTAMP三种精度
@@ -84,14 +88,14 @@ Java中没有定义 Date 类型的精度，而数据库中，表示时间类型�
   - @Temporal(TemporalType.TIMESTAMP) 表示映射到数据库中的时间类型为 TIMESTAMP,日期和时间都有
 ```
 
-## @Embedded 和 @Embeddable
+### @Embedded 和 @Embeddable
 
 ```
 用于一个实体类要在多个不同的实体类中进行使用，而本身又不需要独立生成一个数据库表
 ```
 网上有一份比较详细说明，可参考[链接](http://blog.csdn.net/lmy86263/article/details/52108130)
 
-## @JoinColumn
+### @JoinColumn
 
 ```
 定义表关联的外键字段名
@@ -104,7 +108,7 @@ Java中没有定义 Date 类型的精度，而数据库中，表示时间类型�
   6. columnDefinition: 指定该属性映射到数据库中的实际类型，通常是自动判断。
 ```
 
-## @OneToOne
+### @OneToOne
 
 ```java
 参数：
@@ -183,7 +187,7 @@ public class Identity{
 反之，以关系拥有方Emp的数据访问层进行新增操作(EmpRepository.save()),Emp表和Identity表都有数据，并且
 设置了两条数据的关系，即Emp表中的外键也得到正确新增
 
-## @ManyToOne、@OneToMany
+### @ManyToOne、@OneToMany
 
 多对一(也可叫一对多，只是前后表颠倒一下而已)，只有双向多对一时才用得到`@OneToMany`。多对一中多的一方必定是对应数据库中拥有外键的表，即是关系拥有方，`@ManyToOne`只用在多对一中代表多的一类中，因为`mappedBy`只用于关系被拥有方，所以`@ManyToOne`参数中不包含`mappedBy`。
 
@@ -283,7 +287,7 @@ public class Dept{
 ```
 > 无论双向关联还是单向关联，数据库中均会在Emp表中自动生成一个外键（dept_d_id）
 
-## @ManyToMany
+### @ManyToMany
 
 * targetEntity： 指定关联实体类型，默认为被注解的属性或方法所属的类
 * cascade： 级联操作策略
@@ -334,7 +338,7 @@ public class Course{
 
 > 所有双向关联使用时需谨慎，查询时容易引起栈内存溢出，尽量使用单向关联
 
-## @Enumerated
+### @Enumerated
 
 当实体类中有枚举类型的属性时，默认情况下自动生成的数据库表中对应的字段类型是枚举的索引值，是数字类型的，若希望数据库中存储的是枚举对应的String类型，在属性上加入`@Enumerated(EnumType.STRING)`注解即可。
 
@@ -344,3 +348,202 @@ public class Course{
 
 private RoleEnum role;
 ```
+
+
+## Spring Data Jpa 
+
+​	Spring Data是一个用于简化数据库访问，并支持云服务的开源框架，其主要目标是使得对数据的访问变得方便快捷。Spring Data包含多个子项目，spring-data-jpa就是其子项目之一。
+
+ 	 JPA（Java Persistence API）是一种Java持久化解决方案，负责把数据保存到数据库，实际上它就是一种标准、规范，而不是具体的实现。JPA属于重量级的，因为它需要运行在JAVA EE容器中，而Spring Data JPA提供了轻量级的实现，在任何servlet容器中都可以运行。
+
+​      Spring Data JPA相对于JAVA EE中的JPA，配置更简单，以轻量级的方式实现了部分在 EJB 容器环境下才具有的功能，将 EntityManager 的创建与销毁、事务管理等代码抽取出来，并由其统一管理，并且极大的简化了数据库访问层的代码。
+
+### 重要的类或接口
+
+#### `Repository`
+
+```java
+public interface Repository<T, ID> {
+}
+```
+
+`Repository`是一个空接口，或者说一个**标记接口**(没有包含方法声明的接口)
+
+如果接口继承这个接口的话，这个接口就会被Spring IOC 容器管理
+
+或者可以使用`@RepositoryDefinition()` 指定`domainClass`与`idClass`也可以实现
+
+```java
+@RepositoryDefinition(domainClass=User.class,idClass=Integer.class)
+```
+
+#### `CrudRepository`
+
+```java
+public interface CrudRepository<T, ID> extends Repository<T, ID> {
+    // 保存
+    <S extends T> S save(S var1);
+	// 批量保存
+    <S extends T> Iterable<S> saveAll(Iterable<S> var1);
+	// 根据ID找到一个对象
+    Optional<T> findById(ID var1);
+    // 根据ID判断兑现是否存在
+    boolean existsById(ID var1);
+	// 找到全部
+    Iterable<T> findAll();
+	// 根据ID的集合找到全部
+    Iterable<T> findAllById(Iterable<ID> var1);
+	// 统计全部
+    long count();
+    // 根据ID删除
+    void deleteById(ID var1);
+    // 根据对象删除
+    void delete(T var1);
+    // 根据对象List删除
+    void deleteAll(Iterable<? extends T> var1);
+	// 全部删除
+    void deleteAll();
+}
+```
+
+完成CRUD功能
+
+#### `PagingAndSortingRepository`
+
+```java
+public interface PagingAndSortingRepository<T, ID> extends CrudRepository<T, ID> {
+    // 排序
+    Iterable<T> findAll(Sort var1);
+    // 分页
+    Page<T> findAll(Pageable var1);
+}
+```
+
+继承与`CrudRepository`，实现分页与排序操作
+
+#### `JpaRepository`
+
+```java
+public interface JpaRepository<T, ID> extends PagingAndSortingRepository<T, ID>, QueryByExampleExecutor<T> {
+    // 全部
+    List<T> findAll();
+    // 排序后全部
+    List<T> findAll(Sort var1);
+    // 使用ID List 获取符合要求的全部
+    List<T> findAllById(Iterable<ID> var1);
+	// 批量保存
+    <S extends T> List<S> saveAll(Iterable<S> var1);
+    // flush到数据库
+    void flush();
+	// 保存并刷新
+    <S extends T> S saveAndFlush(S var1);
+	// 按照对象List批量删除
+    void deleteInBatch(Iterable<T> var1);
+	// 全部删除
+    void deleteAllInBatch();
+	// 获取一个
+    T getOne(ID var1);
+
+    <S extends T> List<S> findAll(Example<S> var1);
+
+    <S extends T> List<S> findAll(Example<S> var1, Sort var2);
+}
+```
+
+继承`PagingAndSortingRepository`，实现分页与排序操作
+
+### 查询方法名称定义规则与复杂查询命名
+
+所有支持的关键词：
+
+![](https://img-blog.csdn.net/20180309101755260?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXFfMzI5NTMwNzk=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+
+![](https://img-blog.csdn.net/20180309101805277?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXFfMzI5NTMwNzk=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+
+```java
+public interface EmployeeRepository extends JpaRepository<Employee,Integer> {
+    /**
+     * 查询名称开始为{@code name}，并且年龄小于{@code age}
+     * @param name
+     * @param age
+     * @return
+     * select   from Employee where name like 'name%' and age < age
+     */
+    List<Employee> findAllByNameStartingWithAndAgeLessThanOrderByAgeDesc(String name,int age);
+
+    /**
+     * {@code names} 名称在这个里面 或者age在一个{@code age1}与{@code age2}范围里面
+     * @param names
+     * @param age1
+     * @param age2
+     * @return
+     * select   from Employee where name in (names) or age between age1 and age2
+     */
+    List<Employee> findAllByNameInOrAgeBetweenOrderByAgeDesc(List<String> names,int age1,int age2);
+}
+```
+
+
+
+这种方法存在如下问题
+
+* 方法名称比较长
+* 复杂查询无法实现
+
+使用`@Query`来定义SQL解决
+
+### `@Query`使用
+
+* 在Repository中方法上面使用，不需要遵循查询方法命名规则
+* 只需要将`@Query`定义在Repository中即可
+* 命名参数和索引参数均可以使用
+* 支持本地查询
+
+```java
+ /**
+     * 占位符使用
+     * @param name
+     * @param age
+     * @return
+     */
+    @Query("select t2 from Employee t2 where t2.name = ?1 and t2.age = ?2")
+    public Employee queryByParams1(String name,int age);
+    /**
+     * 占位符使用
+     * @param name 参数中包含%, 开始就在后面加，结尾就在前面加，全局匹配就是两边都加
+     * @param age
+     * @return
+     */
+    @Query("select t2 from Employee t2 where t2.name like ?1 and t2.age > ?2")
+    public List<Employee> queryByParams2(String name,int age);
+
+    /**
+     * 命名参数使用 必须使用@Param()指定参数
+     * @param name 参数中包含%, 开始就在后面加，结尾就在前面加，全局匹配就是两边都加
+     * @param age
+     * @return
+     */
+    @Query("select t2 from Employee t2 where t2.name like :name and t2.age > :age")
+    public List<Employee> queryByParams3(@Param("name") String name, @Param("age") int age);
+```
+
+
+
+### 更新与删除
+
+* `@Modifying`注解使用
+* `@Modifying`与`@Query`结合使用完成更新操作
+* `@Transactional`使用
+
+```java
+ /**
+     * 更新操作
+     * @param id
+     * @param age
+     */
+    @Modifying
+    @Query("update Employee o set o.age = :age where o.id = :id")
+    @Transactional
+    public void update(@Param("id") Integer id,@Param("age") Integer age);
+```
+
