@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>winning-cloud-dalston</artifactId>
+        <groupId>com.winning.devops</groupId>
+        <version>1.0.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>spring-cloud-sleuth-dalston</artifactId>
+    <packaging>pom</packaging>
+
+    <description>
+        分为四个版本
+            普通版本：            链路数据在url查看
+            RabbitMQ：           链路数据发送到RabbitMQ
+            mysql：              链路数据保存到mysql数据库
+            ElasticSearch：      链路数据保存到ElasticSearch数据库
+
+    </description>
+    <modules>
+        <!--普通版本-->
+        <module>cloud-sleuth-dalston</module>
+        <!--RabbitMQ-->
+        <module>cloud-sleuth-rabbitmq-dalston</module>
+        <!--mysql-->
+        <module>cloud-sleuth-mysql-dalston</module>
+        <!--ElasticSearch-->
+        <module>cloud-sleuth-elastic-dalston</module>
+        <!--公共zipkin server-->
+        <module>cloud-zipkin-server</module>
+    </modules>
+
+</project>
