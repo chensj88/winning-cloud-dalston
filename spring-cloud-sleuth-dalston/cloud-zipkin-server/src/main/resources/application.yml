@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: zipkin-server
+server:
+  port: 8700
+eureka:
+  instance:
+    hostname: localhost
+    #home-page-url:  https://${eureka.instance.hostname}:${server.port}/
+    #status-page-url: http://${eureka.instance.hostname}:${management.port}${management.context-path}/info
+    # 配置健康监控页面
+    #health-check-url: http://${eureka.instance.hostname}:${management.port}${management.context-path}/health
+    # 设置Instance ID
+    # instance-id: ${spring.cloud.client.hostname}:${spring.application.name}:${spring.application.instance_id:${server.port}}
+    # 续约的时间间隔，默认为30s,不建议修改
+    # lease-renewal-interval-in-seconds: 30
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    region: ch-east-1
+management:
+  security:
+    enabled: false
+endpoints:
+  enabled: true
