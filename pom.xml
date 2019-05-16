@@ -38,6 +38,7 @@
         -->
         <module>spring-boot-dalston</module>
         <module>spring-cloud-sleuth-dalston</module>
+        <module>spring-security-module</module>
         <!--
             <module>spring-boot-learn</module>
             <module>ribbon-client-dalston</module>
