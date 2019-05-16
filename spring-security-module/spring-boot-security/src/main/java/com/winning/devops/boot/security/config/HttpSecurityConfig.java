@@ -19,6 +19,10 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
  * @project winning-cloud-dalston
  * @package com.winning.devops.boot.security.config
  * @date: 2019-05-16 10:52
+ * {@code @EnableGlobalMethodSecurity} 开启方法级别的保护，可选参数如下
+ *      prePostEnabled：Spring Security的Pre和Post注解是否可用，即@PreAuthorize和@PostAuthorize是否可用
+ *      securedEnabled：Spring Security的@Secured注解是否可用
+ *      jsr250Enabled： Spring Security的JSR-250注解是否可用
  */
 @EnableWebSecurity
 @Configuration
@@ -34,7 +38,8 @@ public class HttpSecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers("/css/**","/","/index","/js/**","/static/**").permitAll()
                 // 下面这个资源需要验密，并且需要角色USER
                 .mvcMatchers("/user/**").hasRole("USER")
-                .mvcMatchers("/blog/**").hasRole("USER")
+                // 下面这个资源需要权限验证，角色是USER或者ADMIN都可
+                .mvcMatchers("/blog/**").hasAnyRole("USER","ADMIN")
                 .and()
                 // 表单登录
                 .formLogin()

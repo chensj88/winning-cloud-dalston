@@ -2959,3 +2959,692 @@ public class TokenFilter extends ZuulFilter {
 
 
 
+
+</dependency>
+```
+
+* `ConfigServerApplication` 启动类
+
+```java
+@SpringBootApplication
+@EnableConfigServer
+public class ConfigServerApplication {
+
+    public static void main(String[] args){
+        SpringApplication.run(ConfigServerApplication.class,args);
+    }
+}
+```
+
+* `application.yml`
+```yaml
+server:
+  port: 8600
+spring:
+  cloud:
+    config:
+      server:
+        从本地加载参数文件
+        native:
+          search-locations: classpath:/shared
+  profiles:
+    active: native
+  application:
+    name: config-server
+```
+
+* 在`src/main/resources`下面新建一个`shared`的文件夹，对应上面的参数`spring.cloud.config.server.native.search-locations`,然后创建一个`config-client-dev.yml`文件
+
+  `config-client-dev.yml`
+
+```yaml
+server:
+  port: 8100
+foo: foo version 1.0.0
+```
+
+#### 8.1.2 `Config Client`
+
+* `pom.xml`
+
+```xml
+ <dependency>
+     <groupId>org.springframework.cloud</groupId>
+     <artifactId>spring-cloud-config-client</artifactId>
+</dependency>
+<!--一定要加入这个依赖  -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+```
+
+* `ConfigClientApplication`
+
+```java
+@SpringBootApplication
+@RestController
+public class ConfigClientApplication {
+
+    public static void main(String[] args){
+        SpringApplication.run(ConfigClientApplication.class,args);
+    }
+
+    @Value("${foo}")
+    private String foo;
+
+    @GetMapping(value = "hi")
+    public String foo(){
+        return foo;
+    }
+}
+```
+
+* `bootstrap.yml`
+
+```yaml
+spring:
+  application:
+    # 服务名称
+    name: config-client
+  cloud:
+    config:
+      # 从url地址的Config Sever读取配置文件
+      uri: http://localhost:8600
+      # 如果没有读取没有成功，快速执行失败
+      fail-fast: false
+  # 指定配置文件为dev文件，
+  # 这个文件使用${spring.application.name}和${spring.profiles.active}构成文件名称，两者使用'-'连接
+  # 对于当前来说，这个对应于config server中的文件名称为config-client-dev.yml
+  profiles:
+    active: dev
+```
+
+
+
+### 8.2 `Config Server` 从远程Git仓库读取文件
+
+#### 8.2.1 `Config Server`
+
+* `application.yml`
+
+```yaml
+server:
+  port: 8600
+spring:
+  cloud:
+    config:
+      server:
+#        从本地加载参数文件
+#        native:
+#          search-locations: classpath:/shared
+#  profiles:
+#    active: native
+#     从github获取
+          git:
+            uri: https://github.com/chensj881008/config.git
+            # 文件路径
+            search-paths: repos
+            username: chensj881008
+            password:
+      # 版本归属
+      label: master
+  application:
+    name: config-server
+```
+
+#### 8.2.2 `Config Client`
+
+上面的信息不需要改变，启动项目，日志如下：
+
+```bash
+2019-04-27 17:15:27.652  INFO 16252 --- [)-192.168.222.1] c.c.c.ConfigServicePropertySourceLocator : Fetching config from server at : http://localhost:8600
+2019-04-27 17:15:27.663  INFO 16252 --- [)-192.168.222.1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 13 ms
+2019-04-27 17:15:30.062  INFO 16252 --- [)-192.168.222.1] c.c.c.ConfigServicePropertySourceLocator : Located environment: name=config-client, profiles=[dev], label=null, version=a2fa514d7ad9bdb28f41080e46731a771b266410, state=null
+```
+
+服务端日志如下：
+
+```bash
+2019-04-27 17:15:22.433  INFO 15112 --- [nio-8600-exec-1] o.s.c.c.s.e.NativeEnvironmentRepository  : Adding property source: file:/C:/Users/chensj/AppData/Local/Temp/config-repo-6231340710909388449/repos/config-client-dev.yml
+2019-04-27 17:15:30.058  INFO 15112 --- [nio-8600-exec-4] o.s.c.c.s.e.NativeEnvironmentRepository  : Adding property source: file:/C:/Users/chensj/AppData/Local/Temp/config-repo-6231340710909388449/repos/config-client-dev.yml
+```
+
+出现下载配置文件的信息，即从Git上面获取配置文件
+
+## 九、`Spring Cloud Sleuth`
+
+  	微服务架构是一个分布式架构，它按业务划分服务单元，一个分布式系统往往有很多个服务单元。由于服务单元数量众多，业务的复杂性，如果出现了错误和异常，很难去定位。主要体现在，一个请求可能需要调用很多个服务，而内部服务的调用复杂性，决定了问题难以定位。所以微服务架构中，必须实现分布式链路追踪，去跟进一个请求到底有哪些服务参与，参与的顺序又是怎样的，从而达到每个请求的步骤清晰可见，出了问题，很快定位。
+
+​		举个例子，在微服务系统中，一个来自用户的请求，请求先达到前端A（如前端界面），然后通过远程调用，达到系统的中间件B、C（如负载均衡、网关等），最后达到后端服务D、E，后端经过一系列的业务逻辑计算最后将数据返回给用户。对于这样一个请求，经历了这么多个服务，怎么样将它的请求过程的数据记录下来呢？这就需要用到服务链路追踪。
+
+​		`Google`开源的`Dapper`链路追踪组件，并在2010年发表了论文《Dapper, a Large-Scale Distributed Systems Tracing Infrastructure》，这篇文章是业内实现链路追踪的标杆和理论基础，具有非常大的参考价值。
+目前，链路追踪组件有`Google`的`Dapper`，`Twitter`的`Zipkin`，以及阿里的`Eagleeye` （鹰眼）等，它们都是非常优秀的链路追踪开源组件。
+
+​		主要介绍如何在Spring Cloud Sleuth中集成Zipkin。在Spring Cloud Sleuth中集成Zipkin非常的简单，只需要引入相应的依赖和做相关的配置即可。
+
+### 9.1 基本术语
+
+Spring Cloud Sleuth采用的是Google的开源项目Dapper的专业术语。
+
+- `Span`：基本工作单元，发送一个远程调度任务就会产生一个`Spa`n，`Span`是一个64位ID唯一标识的，`Trace`是用另一个64位ID唯一标识的，Span还有其他数据信息，比如摘要、时间戳事件、Span的ID、以及进度ID。
+- `Trace`：一系列`Span`组成的一个树状结构。请求一个微服务系统的API接口，这个API接口，需要调用多个微服务，调用每个微服务都会产生一个新的`Span`，所有由这个请求产生的`Span`组成了这个`Trace`。
+- `Annotation`：用来及时记录一个事件的，一些核心注解用来定义一个请求的开始和结束 。这些注解包括以下：
+  - `cs` - Client Sent：客户端发送一个请求，这个注解描述了这个Span的开始
+  - `sr` - Server Received：服务端获得请求并准备开始处理它，如果将其sr减去cs时间戳便可得到网络传输的时间。
+  - `ss` - Server Sent：（服务端发送响应）–该注解表明请求处理的完成(当请求返回客户端)，如果ss的时间戳减去sr时间戳，就可以得到服务器请求的时间。
+  - `cr` - Client Received：（客户端接收响应）-此时Span的结束，如果cr的时间戳减去cs时间戳便可以得到整个请求所消耗的时间。
+
+如果一个请求服务如下：
+
+![](https://raw.githubusercontent.com/spring-cloud/spring-cloud-sleuth/master/docs/src/main/asciidoc/images/dependencies.png)
+
+那么此时将Span和Trace在一个系统中使用Zipkin注解的过程图形化： 
+
+![](https://raw.githubusercontent.com/spring-cloud/spring-cloud-sleuth/master/docs/src/main/asciidoc/images/trace-id.png)
+
+每个颜色的表明一个span(总计7个spans，从A到G)，每个span有类似的信息
+
+```bash
+Trace Id = X
+Span Id = D
+Client Sent
+```
+
+
+此span表示span的Trance Id是X，Span Id是D，同时它发送一个Client Sent事件
+
+spans 的parent/child关系图形化如下： 
+
+
+
+![](https://raw.githubusercontent.com/spring-cloud/spring-cloud-sleuth/master/docs/src/main/asciidoc/images/parents.png)
+
+### 9.2 项目案例
+
+项目构成分为四个部分：
+
+* `cloud-eureka-server`   `8000`  
+  
+  Eureka 服务注册中心
+  
+* `cloud-zipkin-server`   `8700`  
+  
+  Eureka Client,Zipkin Server,链路追踪的服务中心，负责存储链路信息
+  
+* `cloud-user-service`    `8800`  
+
+  Eureka Client ,Zipkin Client
+
+  服务提供者，对外暴露API接口，也是一个链路追踪的客户端，负责产生链路数据，并上传给zipkin-server
+  
+* `cloud-gateway-service` `8900`  
+  
+  Eureka Client ,Zuul,Zipkin Client
+  
+  服务网关，负责请求转换，同时也是一个链路追踪的客户端，负责产生链路数据，并上传给zipkin-server
+
+#### 9.2.1 `cloud-eureka-server` 
+
+##### `pom.xml`
+
+```xml
+<dependency>
+     <groupId>org.springframework.cloud</groupId>
+     <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-devtools</artifactId>
+    <optional>true</optional>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-test</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+##### `application.yml`
+
+```yaml
+server:
+  # 端口
+  port: 8000
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    # 本身为注册中心，不需要去检索服务信息
+    register-with-eureka: false
+    # 本身为注册中心，是否需要在注册中心注册，默认true  集群设置为true
+    fetch-registry: false
+    # 注册地址
+    service-url:
+      # 默认访问地址
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka
+  dashboard:
+     path: /eureka/server
+spring:
+  application:
+    name: eureka-server
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: src/main/java
+```
+
+##### `entry`
+
+```java
+@SpringBootApplication
+@EnableEurekaServer
+public class WinningEurekaServerApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(WinningEurekaServerApplication.class, args);
+    }
+
+}
+```
+
+#### 9.2.2 `cloud-zipkin-server`
+
+> 从 Spring Cloud 2.1.x 开始，spring-cloud-starter-sleuth不在集成zipkin-server，注解`@EnableZipkinServer`将不能在使用，因此需要自行加入依赖`zipkin-server`和`zipkin-autoconfigure-ui`
+
+##### `pom.xml`
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+</dependency>
+<!--zipkin-server-->
+<dependency>
+    <groupId>io.zipkin.java</groupId>
+    <artifactId>zipkin-server</artifactId>
+    <version>${zipkin.version}</version>
+    <exclusions>
+        <exclusion>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+<!--zipkin-server UI 页面依赖-->
+<dependency>
+    <groupId>io.zipkin.java</groupId>
+    <artifactId>zipkin-autoconfigure-ui</artifactId>
+    <version>${zipkin.version}</version>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+<!--spring boot actuator-->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+```
+
+##### `application.yml`
+
+```yaml
+server:
+  port: 8700
+eureka:
+  client:
+    service-url:
+      ### 注册中心地址
+      defaultZone: http://localhost:8000/eureka
+    ###  需要将服务注册到注册中心
+    register-with-eureka: true
+    ### 检索服务信息
+    fetch-registry: true
+    # 注册区域，AWS使用
+    region: ch-east-1
+    healthcheck:
+      # 健康检查 开启 启用客户端运行状况检查可以修改server端运行状态
+      enabled: true
+  instance:
+    hostname: localhost
+    # 主页下面三个参数，是客户端发布给服务端
+    #  主界面
+    homePageUrl: https://${eureka.instance.hostname}:${server.port}/
+# 服务名称(服务注册到eureka名称)--服务注册到注册中心的名称
+spring:
+  application:
+    name: zipkin-server
+  devtools:
+    restart:
+      # 热部署生效
+      enabled: true
+      # 设置重启的目录
+      additional-paths: src/main/java
+# 监控配置
+management:
+  #server:
+  # 监控服务页面端口
+  #port: 8088
+  endpoints:
+    web:
+      # 默认监控前缀
+      #      base-path: /monitor
+      exposure:
+        # 包含端点
+        include: "*"
+  # 单个端点设置
+  endpoint:
+    shutdown:
+      enabled: false
+  # 解决zipkin server UI报错问题
+  metrics:
+    web:
+      server:
+        auto-time-requests: false
+info:
+  app:
+    encoding: UTF-8
+    java:
+      source: 1.8
+      target: 1.8
+    head: ${spring.application.name}
+    body: Welcome, this is ${spring.application.name} @ ${server.port}
+```
+
+##### `entry`
+
+```java
+@SpringBootApplication
+@EnableEurekaClient
+@EnableZipkinServer
+public class ZipkinServerApplication {
+
+    public static void main(String[] args){
+        SpringApplication.run(ZipkinServerApplication.class,args);
+    }
+}
+```
+
+#### 9.2.3  `cloud-user-service` 
+
+##### `pom.xml`
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-zipkin</artifactId>
+</dependency>
+<!--一定要加入这个依赖  -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+<!--spring boot actuator-->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+```
+
+##### `application.yml`
+
+```yaml
+server:
+  port: 8800
+eureka:
+  client:
+    service-url:
+      ### 注册中心地址
+      defaultZone: http://localhost:8000/eureka
+    ###  需要将服务注册到注册中心
+    register-with-eureka: true
+    ### 检索服务信息
+    fetch-registry: true
+    # 注册区域，AWS使用
+    region: ch-east-1
+    healthcheck:
+      # 健康检查 开启 启用客户端运行状况检查可以修改server端运行状态
+      enabled: true
+  instance:
+    hostname: localhost
+    # 主页下面三个参数，是客户端发布给服务端
+    #  主界面
+    homePageUrl: https://${eureka.instance.hostname}:${server.port}/
+# 服务名称(服务注册到eureka名称)--服务注册到注册中心的名称
+spring:
+  application:
+    name: user-service
+  devtools:
+    restart:
+      # 热部署生效
+      enabled: true
+      # 设置重启的目录
+      additional-paths: src/main/java
+  zipkin:
+    # zipkin server 地址
+    base-url: http://localhost:8700
+  sleuth:
+    sampler:
+      # 链路上传的概率
+      probability: 1.0
+      percentage: 1.0
+# 监控配置
+management:
+  #server:
+  # 监控服务页面端口
+  #port: 8088
+  endpoints:
+    web:
+      # 默认监控前缀
+      #      base-path: /monitor
+      exposure:
+        # 包含端点
+        include: "*"
+  # 单个端点设置
+  endpoint:
+    shutdown:
+      enabled: false
+info:
+  app:
+    encoding: UTF-8
+    java:
+      source: 1.8
+      target: 1.8
+    head: ${spring.application.name}
+    body: Welcome, this is ${spring.application.name} @ ${server.port}
+```
+
+##### `entry`
+
+```java
+@SpringBootApplication
+@EnableEurekaClient
+public class UserServiceApplication {
+
+    public static void main(String[] args){
+        SpringApplication.run(UserServiceApplication.class,args);
+    }
+}
+```
+
+#### 9.2.4 `cloud-gateway-service`
+
+##### `pom.xml`
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-zipkin</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-zuul</artifactId>
+</dependency>
+<!--一定要加入这个依赖  -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+<!--spring boot actuator-->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+```
+
+##### `application.yml`
+
+```yaml
+server:
+  port: 8900
+eureka:
+  client:
+    service-url:
+      ### 注册中心地址
+      defaultZone: http://localhost:8000/eureka
+    ###  需要将服务注册到注册中心
+    register-with-eureka: true
+    ### 检索服务信息
+    fetch-registry: true
+    # 注册区域，AWS使用
+    region: ch-east-1
+    healthcheck:
+      # 健康检查 开启 启用客户端运行状况检查可以修改server端运行状态
+      enabled: true
+  instance:
+    hostname: localhost
+    # 主页下面三个参数，是客户端发布给服务端
+    #  主界面
+    homePageUrl: https://${eureka.instance.hostname}:${server.port}/
+# 服务名称(服务注册到eureka名称)--服务注册到注册中心的名称
+spring:
+  application:
+    name: gateway-service
+  devtools:
+    restart:
+      # 热部署生效
+      enabled: true
+      # 设置重启的目录
+      additional-paths: src/main/java
+  zipkin:
+    # zipkin server 地址
+    base-url: http://localhost:8700
+  sleuth:
+    sampler:
+      # 链路上传的概率
+      probability: 1.0
+      percentage: 1.0
+# 监控配置
+management:
+  #server:
+  # 监控服务页面端口
+  #port: 8088
+  endpoints:
+    web:
+      # 默认监控前缀
+      #      base-path: /monitor
+      exposure:
+        # 包含端点
+        include: "*"
+  # 单个端点设置
+  endpoint:
+    shutdown:
+      enabled: false
+info:
+  app:
+    encoding: UTF-8
+    java:
+      source: 1.8
+      target: 1.8
+    head: ${spring.application.name}
+    body: Welcome, this is ${spring.application.name} @ ${server.port}
+zuul:
+  routes:
+    hiapi:
+      path: /user-api/**
+      serviceId: user-service
+  # 设置超时时间
+  host:
+    connect-timeout-millis: 60000
+    socket-timeout-millis: 60000
+    max-total-connections: 500
+# 配置失效时间
+ribbon:
+  ReadTimeout: 60000
+  ConnectTimeout: 60000
+```
+
+##### `entry`
+
+```java
+@SpringBootApplication
+@EnableEurekaClient
+@EnableZuulProxy
+public class GatewayServiceApplication {
+    public static void main(String[] args){
+        SpringApplication.run(GatewayServiceApplication.class,args);
+    }
+}
+```
+
+#### 9.2.5 项目启动
+
+* 按照`cloud-eureka-server`、`cloud-zipkin-server`、`cloud-user-service`、`cloud-gateway-service`分别启动项目。
+
+* 在浏览器或者postman发送Get请求`localhost:8900/user-api/hi`,然后就可以在`http://localhost:8700/zipkin`中查看到数据
+
+  ![](https://raw.githubusercontent.com/spring-cloud/spring-cloud-sleuth/master/docs/src/main/asciidoc/images/zipkin-traces.png)
+
+
+
+### 9.3 整合使用
+
+#### 9.3.1 添加自定义数据
+
+​	在gateway-service中添加过滤器继承`ZuulFilter`
+
+```java
+@Component
+public class AuthTokenFilter extends ZuulFilter {
+
+    /** logger */
+    private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
+    @Autowired
+    private Tracer tracer;
+    @Override
+    public String filterType() {
+        return PRE_TYPE;
+    }
+
+    @Override
+    public int filterOrder() {
+        return 900;
+    }
+
+    @Override
+    public boolean shouldFilter() {
+        return true;
+    }
+
+    @Override
+    public Object run() throws ZuulException {
+        Span currentSpan = this.tracer.currentSpan();
+        // 向当前的span中添加tag
+        currentSpan.tag("operator","chensj");
+        // 输出 TraceId
+        logger.info(this.tracer.currentSpan().context().traceIdString());
+        return null;
+    }
+}
+```
