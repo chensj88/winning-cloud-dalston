@@ -1,31 +1,28 @@
 package com.winning.devops.boot.security.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
+import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 /**
  * @author chensj
- * @title Http Spring Security 配置，主要配置
- *      那些资源需要验证或者不需要验证、登录页面、退出页面、登录成功等
+ * @title
  * @project winning-cloud-dalston
  * @package com.winning.devops.boot.security.config
- * @date: 2019-05-16 10:52
- * {@code @EnableGlobalMethodSecurity} 开启方法级别的保护，可选参数如下
- *      prePostEnabled：Spring Security的Pre和Post注解是否可用，即@PreAuthorize和@PostAuthorize是否可用
- *      securedEnabled：Spring Security的@Secured注解是否可用
- *      jsr250Enabled： Spring Security的JSR-250注解是否可用
+ * @date: 2019-05-17 13:35
  */
-//@EnableWebSecurity
-//@Configuration
-//@EnableGlobalMethodSecurity(prePostEnabled = true)
-public class HttpSecurityConfig extends WebSecurityConfigurerAdapter {
+@EnableWebSecurity
+@Configurable
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+public class DatabaseSecurityConfig extends WebSecurityConfigurerAdapter {
 
+    @Autowired
+    private UserDetailsService userDetailsService;
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -61,16 +58,16 @@ public class HttpSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService());
+         auth.userDetailsService(userDetailsService);
 
     }
 
-    @Override
-    @Bean
-    protected UserDetailsService userDetailsService() {
-        InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-        manager.createUser(User.withUsername("chensj").password("123456").roles("USER").build());
-        manager.createUser(User.withUsername("admin").password("123456").roles("ADMIN").build());
-        return manager;
-    }
+//    @Override
+//    @Bean
+//    protected UserDetailsService userDetailsService() {
+//        InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
+//        manager.createUser(User.withUsername("chensj").password("123456").roles("USER").build());
+//        manager.createUser(User.withUsername("admin").password("123456").roles("ADMIN").build());
+//        return manager;
+//    }
 }
