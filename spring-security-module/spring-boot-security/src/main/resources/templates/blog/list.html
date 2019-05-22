@@ -1,0 +1,41 @@
+<!--
+   Created with IntelliJ IDEA.
+   Description: 
+   User: chensj
+   Date: 2019-05-16
+   Time: 15:14
+ -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>博客列表</title>
+</head>
+<body>
+
+<table>
+    <thead>
+        <tr>
+            <th>博客序号</th>
+            <th>博客名称</th>
+            <th>博客内容</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="info:${blogs}">
+            <td th:text="${info.id}"></td>
+            <td th:text="${info.name}"></td>
+            <td th:text="${info.content}"></td>
+            <td><a th:href="'/blog/'+${info.id}+'/delete'">删除</a> </td>
+        </tr>
+    </tbody>
+    <p><a th:href="@{/user/index}">用户信息</a></p>
+    <p><a th:href="@{/index}">返回首页</a></p>
+</table>
+
+</body>
+</html>

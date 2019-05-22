@@ -1,0 +1,31 @@
+<!--
+   Created with IntelliJ IDEA.
+   Description: 
+   User: chensj
+   Date: 2019-05-16
+   Time: 11:06
+ -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>登录页</title>
+</head>
+<body>
+
+<h1>登录页</h1>
+<p>User  角色用户： chensj/123456</p>
+<p>Admin 角色用户： admin/123456</p>
+<p th:if="${loginError}" class="error">用户名或密码错误</p>
+<form th:action="@{/login}" method="post">
+    <label for="username">用户名</label>
+    <input type="text" id="username" name="username" autofocus="autofocus"/><br/>
+    <label for="passwd">密码</label>
+    <input type="password" id="passwd" name="passwd" autofocus="autofocus"/><br/>
+    <input type="submit" value="登录"/>
+</form>
+<p><a href="/index" th:href="@{/index}">返回首页</a></p>
+</body>
+</html>

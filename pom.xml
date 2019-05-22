@@ -38,12 +38,12 @@
         -->
         <module>spring-boot-dalston</module>
         <module>spring-cloud-sleuth-dalston</module>
-        <!--
-            <module>spring-boot-learn</module>
-            <module>ribbon-client-dalston</module>
-            <module>eureka-ribbon-hystrix-client-dalston</module>
-            <module>eureka-feign-hystrix-client-dalston</module>
-        -->
+        <module>spring-security-module</module>
+        <module>spring-cloud-oauth2-dalston</module>
+        <module>spring-boot-learn</module>
+        <module>ribbon-client-dalston</module>
+        <module>eureka-ribbon-hystrix-client-dalston</module>
+        <module>eureka-feign-hystrix-client-dalston</module>
 
     </modules>
     <parent>

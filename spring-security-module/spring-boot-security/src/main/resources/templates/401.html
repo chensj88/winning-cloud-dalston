@@ -1,0 +1,36 @@
+<!--
+   Created with IntelliJ IDEA.
+   Description: 
+   User: chensj
+   Date: 2019-05-16
+   Time: 11:23
+ -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>权限不足</title>
+</head>
+<body>
+<div>
+    <h1>权限不足</h1>
+</div>
+<div>
+    <div sec:authorize="isAuthenticated()">
+        <p>当前已有用户登录</p>
+        登录用户：<span sec:authentication="name"></span><br/>
+        用户角色：<span sec:authentication="principal.authorities"></span><br/>
+    </div>
+    <div sec:authorize="isAnonymous()">
+        <p>当前未有用户登录</p>
+    </div>
+    <p>拒绝访问!</p>
+</div>
+
+
+
+</body>
+</html>
