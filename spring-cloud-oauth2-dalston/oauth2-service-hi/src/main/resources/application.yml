@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: service-hi
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://192.168.31.190:3306/oauth2?useSSL=false
+    username: root
+    password: 123456
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQLDialect
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+security:
+  oauth2:
+    resource:
+      # 获取当前Token的用户信息
+      user-info-uri: http://localhost:5000/users/current
+    # 客户端信息，与oauth-service 对应
+    client:
+      client-id: service-hi
+      client-secret: 123456
+      access-token-uri: http://localhost:5000/oauth/token
+      grant-type: client_credentials,password
+      scope: server
+server:
+  port: 8762
+#  context-path: /uaa
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
