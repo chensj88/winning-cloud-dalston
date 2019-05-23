@@ -24,7 +24,7 @@ public class ResourceServerConfigure extends ResourceServerConfigurerAdapter {
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http
-                //
+                // 认证表达式
                 .authorizeRequests()
                 // ant表达式 配置
                 .antMatchers("/users/register")

@@ -14,6 +14,7 @@
     <packaging>pom</packaging>
     <description>
         spring security module
+        https://gitee.com/zhang.w/boot-security.git
     </description>
     <modules>
         <module>spring-boot-security</module>
