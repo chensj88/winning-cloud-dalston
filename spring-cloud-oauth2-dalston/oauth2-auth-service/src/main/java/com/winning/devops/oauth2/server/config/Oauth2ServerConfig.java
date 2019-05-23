@@ -65,7 +65,7 @@ public class Oauth2ServerConfig extends AuthorizationServerConfigurerAdapter {
                 .inMemory()
                 // 创建一个clientID为client_1的客户端
                 .withClient("browser")
-                //
+                // 客户端访问密码
                 .secret("123456")
                 // 配置了验证类型为refresh_token和password,
                 .authorizedGrantTypes("refresh_token", "password")

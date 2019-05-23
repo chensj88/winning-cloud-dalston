@@ -55,7 +55,7 @@ public class Oauth2ServerApplication {
         /**
          * 用来配置令牌端点(Token Endpoint)的安全约束.
          * @param security
-         * @throws Exception
+         * @throws Exception 异常
          */
         @Override
         public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
@@ -70,7 +70,7 @@ public class Oauth2ServerApplication {
         /**
          * 用来配置客户端详情服务（ClientDetailsService），客户端详情信息在这里进行初始化，你能够把客户端详情信息写死在这里或者是通过数据库来存储调取详情信息。
          * @param clients 客户端配置
-         * @throws Exception
+         * @throws Exception 异常
          */
         @Override
         public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
@@ -80,7 +80,7 @@ public class Oauth2ServerApplication {
                     .inMemory()
                     // 创建一个clientID为client_1的客户端
                     .withClient("browser")
-                    //
+                    // 客户端密码
                     .secret("123456")
                     // 配置了验证类型为refresh_token和password,
                     .authorizedGrantTypes("refresh_token", "password")
@@ -97,7 +97,7 @@ public class Oauth2ServerApplication {
          * 用来配置授权（authorization）以及令牌（token）的访问端点和令牌服务(token services)。
          *
          * @param endpoints
-         * @throws Exception
+         * @throws Exception 异常
          */
         @Override
         public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
