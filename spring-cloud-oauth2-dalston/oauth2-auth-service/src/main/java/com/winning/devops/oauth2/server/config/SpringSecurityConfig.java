@@ -30,7 +30,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     /**
      * AuthenticationManagerBuilder 配置了
      * 验证的用户信息源和密码加密的策略，并且向 IoC 容器注入了 AuthenticationManager
-     * 对象。这市要在 0Auth2 中配置，因为在 0Auth2 中配置了 AuthenticationManager,
+     * 对象。这是要在 0Auth2 中配置，因为在 0Auth2 中配置了 AuthenticationManager,
      * 密码验证才会开肩。在本例中，采用的是密码验证
      * @param auth
      * @throws Exception

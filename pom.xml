@@ -46,6 +46,7 @@
         <module>eureka-ribbon-hystrix-client-dalston</module>
         <module>eureka-feign-hystrix-client-dalston</module>
         <module>spring-security-module</module>
+        <module>spring-cloud-oauth2-jwt-dalston</module>
 
     </modules>
     <parent>
