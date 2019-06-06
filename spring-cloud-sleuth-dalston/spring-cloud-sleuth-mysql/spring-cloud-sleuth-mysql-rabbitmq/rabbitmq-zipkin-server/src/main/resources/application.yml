@@ -1,0 +1,27 @@
+eureka:
+  instance:
+    hostname: localhost
+    # 续约的时间间隔，默认为30s,不建议修改
+    lease-renewal-interval-in-seconds: 30
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    region: ch-east-1
+spring:
+  application:
+    name: rabbitmq-zipkin-server
+  rabbitmq:
+    host: 192.168.31.96
+    port: 5672
+    username: chensj
+    password: 123456
+  datasource:
+    url: jdbc:mysql://192.168.31.96:3306/rabbitmq?useUnicode=true&useSSL=false
+    driver-class-name: com.mysql.jdbc.Driver
+    username: root
+    password: 123456
+server:
+  port: 9411
+zipkin:
+  storage:
+    type: mysql

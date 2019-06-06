@@ -1,0 +1,27 @@
+server:
+  port: 5000
+spring:
+  rabbitmq:
+    host: 192.168.31.96
+    port: 5672
+    username: chensj
+    password: 123456
+  sleuth:
+    sampler:
+      percentage: 1.0
+  application:
+    name: rabbitmq-gateway-server
+eureka:
+  instance:
+    hostname: localhost
+    # 续约的时间间隔，默认为30s,不建议修改
+    lease-renewal-interval-in-seconds: 30
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    region: ch-east-1
+zuul:
+  routes:
+    api-a:
+      path: /user/**
+      serviceId: rabbitmq-user-service
