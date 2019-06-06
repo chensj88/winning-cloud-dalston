@@ -1,0 +1,14 @@
+eureka:
+  instance:
+    hostname: localhost
+    # 续约的时间间隔，默认为30s,不建议修改
+    lease-renewal-interval-in-seconds: 30
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    region: ch-east-1
+spring:
+  application:
+    name: zipkin-server
+server:
+  port: 9411
