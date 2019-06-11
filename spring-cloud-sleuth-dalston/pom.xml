@@ -24,6 +24,7 @@
         <module>spring-cloud-sleuth-common</module>
         <module>spring-cloud-sleuth-rabbitmq</module>
         <module>spring-cloud-sleuth-mysql</module>
+        <module>spring-cloud-sleuth-elasticsearch</module>
     </modules>
 
 </project>
