@@ -12,7 +12,4 @@
     <artifactId>cloud-admin-server</artifactId>
 
 
-    <description>
-        spring boot admin server
-    </description>
 </project>
