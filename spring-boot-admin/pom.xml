@@ -13,7 +13,6 @@
 
     <packaging>pom</packaging>
     <modules>
-        <module>cloud-admin-server</module>
         <module>cloud-eureka-server</module>
         <module>cloud-admin-client</module>
         <module>cloud-admin-server</module>
